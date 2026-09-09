@@ -1,243 +1,244 @@
+import {useState} from 'react';
 import {useLoaderData} from 'react-router';
-import {
-  getSelectedProductOptions,
-  Analytics,
-  useOptimisticVariant,
-  getProductOptions,
-  getAdjacentAndFirstAvailableVariants,
-  useSelectedOptionInUrlParam,
-} from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {Image, Money, CartForm} from '@shopify/hydrogen';
+import {UlIcon} from '~/components/UlIcon';
+import {useAside} from '~/components/Aside';
 
 /**
- * @type {Route.MetaFunction}
+ * Página de produto.
+ *
+ * Duas queries de propósito, com caches diferentes:
+ *
+ *   PRODUCT_QUERY  → CacheLong()   título, fotos, descrição
+ *   STOCK_QUERY    → CacheShort()  disponibilidade e quantidade
+ *
+ * Se fosse uma query só, você escolheria entre servir estoque velho ou
+ * bater no Shopify a cada visita. Separado, você tem os dois.
  */
-export const meta = ({data}) => {
-  return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
-    {
-      rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
-    },
-  ];
-};
 
-/**
- * @param {Route.LoaderArgs} args
- */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, params, request}) {
-  const {handle} = params;
+export async function loader({params, context}) {
   const {storefront} = context;
+  const {handle} = params;
 
-  if (!handle) {
-    throw new Error('Expected product handle to be defined');
-  }
+  if (!handle) throw new Response('Produto não informado', {status: 404});
 
-  const [{product}] = await Promise.all([
+  const [{product}, {product: stock}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      variables: {handle},
+      cache: storefront.CacheLong(),
     }),
-    // Add other queries here, so that they are loaded in parallel
+    storefront.query(STOCK_QUERY, {
+      variables: {handle},
+      cache: storefront.CacheShort(),
+    }),
   ]);
 
-  if (!product?.id) {
-    throw new Response(null, {status: 404});
-  }
+  if (!product) throw new Response('Produto não encontrado', {status: 404});
 
-  // The API handle might be localized, so redirect to the localized handle
-  redirectIfHandleIsLocalized(request, {handle, data: product});
+  // Junta o estoque fresco nas variantes do catálogo cacheado.
+  const stockById = new Map(
+    (stock?.variants?.nodes ?? []).map((v) => [v.id, v]),
+  );
+  const variants = product.variants.nodes.map((variant) => ({
+    ...variant,
+    ...stockById.get(variant.id),
+  }));
 
-  return {
-    product,
-  };
+  return {product: {...product, variants: {nodes: variants}}};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context, params}) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
-
-  return {};
-}
+export const meta = ({data}) => [
+  {title: `${data?.product?.title ?? 'Produto'} | Urban Life`},
+  {name: 'description', content: data?.product?.seo?.description ?? ''},
+];
 
 export default function Product() {
-  /** @type {LoaderReturnData} */
   const {product} = useLoaderData();
+  const {open} = useAside();
+  const variants = product.variants.nodes;
 
-  // Optimistically selects a variant with given available variant information
-  const selectedVariant = useOptimisticVariant(
-    product.selectedOrFirstAvailableVariant,
-    getAdjacentAndFirstAvailableVariants(product),
+  const [selectedId, setSelectedId] = useState(
+    variants.find((v) => v.availableForSale)?.id ?? variants[0]?.id,
   );
+  const [imageIndex, setImageIndex] = useState(0);
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
-  useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
-
-  // Get the product options array
-  const productOptions = getProductOptions({
-    ...product,
-    selectedOrFirstAvailableVariant: selectedVariant,
-  });
-
-  const {title, descriptionHtml} = product;
+  const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
+  const images = product.images.nodes;
+  const activeImage = images[imageIndex];
+  const activeImageRatio =
+    activeImage?.width && activeImage?.height
+      ? `${activeImage.width}/${activeImage.height}`
+      : '4/5';
+  const lowStock =
+    selected?.quantityAvailable != null &&
+    selected.quantityAvailable > 0 &&
+    selected.quantityAvailable <= 5;
 
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+    <section className="ul-product">
+      <div className="ul-container ul-product__grid">
+        <div className="ul-product__media">
+          <div className="ul-product__frame">
+            {activeImage && (
+              <Image
+                data={activeImage}
+                aspectRatio={activeImageRatio}
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                loading="eager"
+                className="ul-product__image"
+              />
+            )}
+          </div>
+
+          {images.length > 1 && (
+            <div className="ul-product__thumbs">
+              {images.map((image, i) => (
+                <button
+                  key={image.id}
+                  type="button"
+                  className={`ul-product__thumb${
+                    i === imageIndex ? ' ul-product__thumb--active' : ''
+                  }`}
+                  aria-label={`Ver imagem ${i + 1}`}
+                  onClick={() => setImageIndex(i)}
+                >
+                  <Image data={image} aspectRatio="1/1" sizes="80px" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="ul-product__info">
+          <span className="ul-badge">
+            <UlIcon name="leaf" size={14} />
+            {product.vendor || 'Urban Life'}
+          </span>
+
+          <h1 className="ul-product__title">{product.title}</h1>
+
+          <p className="ul-product__price">
+            <Money data={selected.price} />
+            {selected.compareAtPrice && (
+              <s className="ul-product__compare">
+                <Money data={selected.compareAtPrice} />
+              </s>
+            )}
+          </p>
+
+          {variants.length > 1 && (
+            <div className="ul-product__variants">
+              <p className="ul-product__variants-label">Escolha o tamanho</p>
+              <div className="ul-product__variant-list">
+                {variants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    disabled={!variant.availableForSale}
+                    aria-pressed={variant.id === selectedId}
+                    className={`ul-product__variant${
+                      variant.id === selectedId
+                        ? ' ul-product__variant--active'
+                        : ''
+                    }`}
+                    onClick={() => setSelectedId(variant.id)}
+                  >
+                    {variant.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {lowStock && (
+            <p className="ul-product__low-stock">
+              <UlIcon name="clock" size={14} />
+              Restam apenas {selected.quantityAvailable} — a horta reserva por
+              ordem de pedido.
+            </p>
+          )}
+
+          <CartForm
+            route="/cart"
+            action={CartForm.ACTIONS.LinesAdd}
+            inputs={{lines: [{merchandiseId: selectedId, quantity: 1}]}}
+          >
+            <button
+              type="submit"
+              className="ul-btn ul-btn--solid ul-btn--lg ul-product__add"
+              disabled={!selected?.availableForSale}
+              onClick={() => {
+                if (selected?.availableForSale) open('cart');
+              }}
+            >
+              {selected?.availableForSale
+                ? 'Adicionar à cesta'
+                : 'Esgotado nesta semana'}
+              {selected?.availableForSale && (
+                <UlIcon name="arrow-right" size={16} />
+              )}
+            </button>
+          </CartForm>
+
+          <div className="ul-product__delivery">
+            <UlIcon name="truck" size={16} />
+            <span>
+              Entrega programada por região. O dia depende da sua zona — veja as{' '}
+              <a href="/#produtores" className="ul-regions__contact-link">
+                zonas atendidas
+              </a>
+              .
+            </span>
+          </div>
+
+          {product.descriptionHtml && (
+            <div
+              className="ul-product__description"
+              dangerouslySetInnerHTML={{__html: product.descriptionHtml}}
+            />
+          )}
+        </div>
       </div>
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || '0',
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
-              quantity: 1,
-            },
-          ],
-        }}
-      />
-    </div>
+    </section>
   );
 }
 
-const PRODUCT_VARIANT_FRAGMENT = `#graphql
-  fragment ProductVariant on ProductVariant {
-    availableForSale
-    compareAtPrice {
-      amount
-      currencyCode
-    }
-    id
-    image {
-      __typename
+const PRODUCT_QUERY = `#graphql
+  query Product($handle: String!, $country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
       id
-      url
-      altText
-      width
-      height
-    }
-    price {
-      amount
-      currencyCode
-    }
-    product {
       title
       handle
-    }
-    selectedOptions {
-      name
-      value
-    }
-    sku
-    title
-    unitPrice {
-      amount
-      currencyCode
+      vendor
+      descriptionHtml
+      images(first: 6) {
+        nodes { id url altText width height }
+      }
+      variants(first: 20) {
+        nodes {
+          id
+          title
+          selectedOptions { name value }
+          price { amount currencyCode }
+          compareAtPrice { amount currencyCode }
+        }
+      }
+      seo { title description }
     }
   }
 `;
 
-const PRODUCT_FRAGMENT = `#graphql
-  fragment Product on Product {
-    id
-    title
-    vendor
-    handle
-    descriptionHtml
-    description
-    encodedVariantExistence
-    encodedVariantAvailability
-    options {
-      name
-      optionValues {
-        name
-        firstSelectableVariant {
-          ...ProductVariant
-        }
-        swatch {
-          color
-          image {
-            previewImage {
-              url
-            }
-          }
+const STOCK_QUERY = `#graphql
+  query ProductStock($handle: String!) {
+    product(handle: $handle) {
+      variants(first: 20) {
+        nodes {
+          id
+          availableForSale
+          quantityAvailable
         }
       }
     }
-    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
-      ...ProductVariant
-    }
-    adjacentVariants (selectedOptions: $selectedOptions) {
-      ...ProductVariant
-    }
-    seo {
-      description
-      title
-    }
   }
-  ${PRODUCT_VARIANT_FRAGMENT}
 `;
-
-const PRODUCT_QUERY = `#graphql
-  query Product(
-    $country: CountryCode
-    $handle: String!
-    $language: LanguageCode
-    $selectedOptions: [SelectedOptionInput!]!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...Product
-    }
-  }
-  ${PRODUCT_FRAGMENT}
-`;
-
-/** @typedef {import('./+types/products.$handle').Route} Route */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

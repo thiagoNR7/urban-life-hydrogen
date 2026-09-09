@@ -13,6 +13,16 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
+
+// Estilos da Urban Life. A ordem importa: ul-tokens define as variáveis
+// --ul-* que todos os outros consomem, então tem que vir primeiro.
+import ulTokens from '~/styles/ul-tokens.css?url';
+import ulBase from '~/styles/ul-base.css?url';
+import ulAnimations from '~/styles/ul-animations.css?url';
+import ulSections from '~/styles/ul-sections.css?url';
+import ulShop from '~/styles/ul-shop.css?url';
+import ulApp from '~/styles/ul-app.css?url';
+
 import {PageLayout} from './components/PageLayout';
 
 /**
@@ -146,12 +156,18 @@ export function Layout({children}) {
   const nonce = useNonce();
 
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={ulTokens}></link>
+        <link rel="stylesheet" href={ulBase}></link>
+        <link rel="stylesheet" href={ulAnimations}></link>
+        <link rel="stylesheet" href={ulSections}></link>
+        <link rel="stylesheet" href={ulShop}></link>
+        <link rel="stylesheet" href={ulApp}></link>
         <Meta />
         <Links />
       </head>

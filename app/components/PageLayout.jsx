@@ -1,17 +1,25 @@
 import {Await, Link} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {UlHeader} from '~/components/UlHeader';
+import {UlFooter} from '~/components/UlFooter';
 
 /**
- * @param {PageLayoutProps}
+ * Layout da Urban Life.
+ *
+ * Mantém o Aside.Provider, o carrinho lateral e a busca preditiva do
+ * esqueleto — são eles que fazem o resto do template funcionar. O que muda
+ * é só o Header e o Footer, que passam a ser os seus.
+ *
+ * O MobileMenuAside do esqueleto foi removido de propósito: o UlHeader já
+ * traz o próprio menu mobile, portado do tema. Manter os dois faria dois
+ * menus concorrentes.
  */
 export function PageLayout({
   cart,
@@ -25,21 +33,12 @@ export function PageLayout({
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      {header && (
-        <Header
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-        />
-      )}
-      <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+
+      <div className="ul-page">
+        <UlHeader />
+        <main>{children}</main>
+        <UlFooter />
+      </div>
     </Aside.Provider>
   );
 }
@@ -49,8 +48,8 @@ export function PageLayout({
  */
 function CartAside({cart}) {
   return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
+    <Aside type="cart" heading="SUA CESTA">
+      <Suspense fallback={<p>Carregando cesta...</p>}>
         <Await resolve={cart}>
           {(cart) => {
             return <CartMain cart={cart} layout="aside" />;
@@ -64,7 +63,7 @@ function CartAside({cart}) {
 function SearchAside() {
   const queriesDatalistId = useId();
   return (
-    <Aside type="search" heading="SEARCH">
+    <Aside type="search" heading="BUSCAR">
       <div className="predictive-search">
         <br />
         <SearchFormPredictive>
@@ -74,13 +73,13 @@ function SearchAside() {
                 name="q"
                 onChange={fetchResults}
                 onFocus={fetchResults}
-                placeholder="Search"
+                placeholder="Buscar"
                 ref={inputRef}
                 type="search"
                 list={queriesDatalistId}
               />
               &nbsp;
-              <button onClick={goToSearch}>Search</button>
+              <button onClick={goToSearch}>Buscar</button>
             </>
           )}
         </SearchFormPredictive>
@@ -90,7 +89,7 @@ function SearchAside() {
             const {articles, collections, pages, products, queries} = items;
 
             if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
+              return <div>Carregando...</div>;
             }
 
             if (!total) {
@@ -129,7 +128,7 @@ function SearchAside() {
                     to={`${SEARCH_ENDPOINT}?q=${term.current}`}
                   >
                     <p>
-                      View all results for <q>{term.current}</q>
+                      Ver todos os resultados para <q>{term.current}</q>
                       &nbsp; →
                     </p>
                   </Link>
@@ -140,28 +139,6 @@ function SearchAside() {
         </SearchResultsPredictive>
       </div>
     </Aside>
-  );
-}
-
-/**
- * @param {{
- *   header: PageLayoutProps['header'];
- *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
- * }}
- */
-function MobileMenuAside({header, publicStoreDomain}) {
-  return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
   );
 }
 

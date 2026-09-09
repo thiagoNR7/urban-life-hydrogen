@@ -1,0 +1,30 @@
+/*
+  Regras de página que no tema viviam em layout/theme.liquid e nas
+  configurações globais (config/settings_data.json).
+*/
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ul-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.ul-page main {
+  flex: 1;
+}
+
+img {
+  max-width: 100%;
+}
