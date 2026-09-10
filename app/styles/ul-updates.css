@@ -1,0 +1,218 @@
+/*
+  Urban Life — atualizações de estilo
+
+  Regras novas trazidas do site em produção. Este arquivo carrega DEPOIS de
+  ul-sections.css, então sobrescreve o que precisar sem editar o CSS portado
+  do tema (que fica intacto como referência do design original).
+
+  Usa apenas tokens --ul-*. Nenhum valor de cor solto.
+*/
+
+/* ---------- botão creme (segundo botão do hero) ---------- */
+.ul-btn--cream {
+  background: var(--ul-color-muted, #EDE9E0);
+  color: var(--ul-color-foreground);
+  border: 1px solid transparent;
+}
+
+.ul-btn--cream:hover {
+  background: var(--ul-color-border, #DFD9CC);
+}
+
+/* ---------- zonas em breve ---------- */
+.ul-regions__card--soon {
+  opacity: 0.72;
+}
+
+.ul-regions__card--soon .ul-regions__zone,
+.ul-regions__card--soon .ul-regions__horta {
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-regions__card--soon .ul-regions__pill {
+  opacity: 0.85;
+}
+
+/* Chip "Em breve": mesma forma do chip de dia, sem o verde. */
+.ul-regions__day--soon {
+  background: rgb(var(--ul-color-border-rgb, 223 217 204) / 0.5);
+  color: var(--ul-color-muted-foreground);
+  border-color: transparent;
+}
+
+.ul-regions__day--soon svg {
+  color: var(--ul-color-muted-foreground);
+}
+
+/* Nota de atendimento futuro, no lugar do raio de entrega. */
+.ul-regions__radius--soon {
+  color: var(--ul-color-muted-foreground);
+  font-style: normal;
+}
+
+.ul-regions__radius--soon svg {
+  color: var(--ul-color-muted-foreground);
+  opacity: 0.8;
+}
+
+/* Cinco zonas em vez de quatro: a última ocupa a linha inteira em telas
+   largas, senão fica um card órfão desalinhado. */
+@media (min-width: 1024px) {
+  .ul-regions__grid > .ul-regions__card:nth-child(5):last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- área de conta no cabeçalho ---------- */
+/*
+  Círculo escuro com a inicial, como no site. O valor abaixo é o mesmo tom
+  que abre o --ul-gradient-navbar (#0f1f14), isolado como token próprio
+  porque não dá para extrair uma parada de um gradiente em CSS.
+*/
+:root {
+  --ul-color-navbar-dark: #0f1f14;
+}
+
+.ul-header__account {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--ul-radius-pill, 999px);
+  background: var(--ul-color-navbar-dark);
+  color: var(--ul-color-white);
+  text-decoration: none;
+  transition: opacity var(--ul-transition-fast, 150ms ease);
+}
+
+.ul-header__account:hover {
+  opacity: 0.85;
+}
+
+.ul-header__account-initial {
+  font-family: var(--ul-font-family);
+  font-size: 0.875rem;
+  font-weight: var(--ul-font-weight-semibold, 600);
+  line-height: 1;
+}
+
+/* ---------- tags da missão no rodapé ---------- */
+.ul-footer__mission-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ul-footer__mission-tags li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 0.72);
+}
+
+.ul-footer__mission-tags li svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* ---------- links ---------- */
+/* No site atual os links do menu e o CTA não são sublinhados em nenhum
+   estado. O sublinhado fica só onde é link de texto dentro de parágrafo. */
+.ul-header__menu-link,
+.ul-header__menu-link:hover,
+.ul-header__producer-cta,
+.ul-header__producer-cta:hover,
+.ul-footer__link,
+.ul-footer__link:hover {
+  text-decoration: none;
+}
+
+/* ---------- cabeçalho em três colunas ---------- */
+/*
+  O tema usava flex + space-between nos seis filhos diretos do navbar, o que
+  distribuía logo, menu, conta, carrinho, CTA e hambúrguer igualmente pela
+  largura — daí os vãos grandes entre conta e carrinho.
+
+  Aqui vira grid de três colunas: 1fr | auto | 1fr. A coluna do meio recebe o
+  menu, e como as laterais são iguais, ele fica centrado na tela mesmo com a
+  logo e o bloco de ações tendo larguras diferentes.
+
+  Só a partir de 901px, que é onde o tema mostra o menu desktop e o CTA.
+*/
+@media (min-width: 901px) {
+  .ul-header__navbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--ul-space-menu-gap);
+  }
+
+  .ul-header__brand {
+    justify-self: start;
+  }
+
+  .ul-header__menu--desktop {
+    justify-self: center;
+  }
+
+  .ul-header__actions {
+    justify-self: end;
+  }
+}
+
+.ul-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+/*
+  O sublinhado animado do tema fica. Ele já vem de ul-sections.css: um ::after
+  de 2px que cresce do centro para as bordas no hover e no foco, usando
+  --ul-color-underline. Nada a fazer aqui além de não atrapalhar.
+
+  Tamanho dos links: o tema não define font-size em .ul-header__menu-link, ele
+  herda. No Shopify herdava a base do Horizon; aqui herda a do esqueleto, que
+  é maior — daí os links saírem 14% maiores que no site.
+
+  Medição: "Produtos em destaque" ocupa 181px no site e ocupava 206px aqui
+  (prints a 125% de zoom). 16px x 181/206 = 14px.
+*/
+.ul-header__menu-link {
+  font-size: 0.875rem;
+}
+
+/* ---------- carrossel do hero ---------- */
+/*
+  O tema usava max-width: 24rem e aspect-ratio: 4/5 — um retrato estreito.
+  O site atual usa um quadrado maior: medido em ~506px de lado (o print tinha
+  633px, dividido pelo zoom de 125% do Windows).
+
+  32rem = 512px, o valor da escala mais próximo da medida.
+*/
+.ul-hero__frame {
+  max-width: 32rem;
+  aspect-ratio: 1 / 1;
+}
+
+/* ---------- botões nunca sublinham ---------- */
+/*
+  Os .ul-btn viram <Link> ou <a> no React, e o estilo de link do esqueleto
+  (app.css) aplica text-decoration: underline no hover. No tema isso não
+  acontecia porque o Horizon já zerava. Vale para todas as variantes.
+*/
+.ul-btn,
+.ul-btn:hover,
+.ul-btn:focus,
+.ul-btn:focus-visible,
+.ul-btn:active,
+.ul-btn:visited {
+  text-decoration: none;
+}

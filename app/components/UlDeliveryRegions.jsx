@@ -1,7 +1,17 @@
 import {UlIcon} from './UlIcon';
 import {deliveryRegions} from '~/data/content';
 
-/** Porte de sections/ul-delivery-regions.liquid */
+/**
+ * Zonas de entrega.
+ *
+ * Atualizado para o site atual: cada cluster tem um campo `active`.
+ *
+ *   ativa    → chip verde com o dia da semana + linha de raio de entrega
+ *   inativa  → chip cinza "Em breve" com cadeado + nota de atendimento futuro,
+ *              sem raio (não faz sentido prometer distância onde não se entrega)
+ *
+ * O card inteiro fica esmaecido quando inativo, via .ul-regions__card--soon.
+ */
 export function UlDeliveryRegions() {
   return (
     <section id="produtores" className="ul-regions">
@@ -20,12 +30,20 @@ export function UlDeliveryRegions() {
               .split(',')
               .map((n) => n.trim())
               .filter(Boolean);
-            const delay = ((i + 1) % 4) + 1;
+            const delay = (i % 4) + 1;
+            const isActive = cluster.active !== false;
 
             return (
               <div
                 key={cluster.zone}
-                className={`ul-regions__card ul-reveal ul-reveal-delay-${delay}`}
+                className={[
+                  'ul-regions__card',
+                  'ul-reveal',
+                  `ul-reveal-delay-${delay}`,
+                  isActive ? '' : 'ul-regions__card--soon',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 <div className="ul-regions__card-head">
                   <div>
@@ -33,10 +51,18 @@ export function UlDeliveryRegions() {
                     <h3 className="ul-regions__zone">{cluster.zone}</h3>
                     <p className="ul-regions__horta">{cluster.horta}</p>
                   </div>
-                  <div className="ul-regions__day">
-                    <UlIcon name="clock" size={12} />
-                    <span>{cluster.day}</span>
-                  </div>
+
+                  {isActive ? (
+                    <div className="ul-regions__day">
+                      <UlIcon name="clock" size={12} />
+                      <span>{cluster.day}</span>
+                    </div>
+                  ) : (
+                    <div className="ul-regions__day ul-regions__day--soon">
+                      <UlIcon name="lock" size={12} />
+                      <span>{deliveryRegions.soonLabel}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="ul-regions__neighborhoods">
@@ -47,12 +73,19 @@ export function UlDeliveryRegions() {
                   ))}
                 </div>
 
-                <div className="ul-regions__radius">
-                  <UlIcon name="map-pin" size={12} />
-                  <span>
-                    Raio de entrega: <strong>{cluster.radius}</strong>
-                  </span>
-                </div>
+                {isActive ? (
+                  <div className="ul-regions__radius">
+                    <UlIcon name="map-pin" size={12} />
+                    <span>
+                      Raio de entrega: <strong>{cluster.radius}</strong>
+                    </span>
+                  </div>
+                ) : (
+                  <div className="ul-regions__radius ul-regions__radius--soon">
+                    <UlIcon name="lock" size={12} />
+                    <span>{deliveryRegions.soonNote}</span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -65,8 +98,8 @@ export function UlDeliveryRegions() {
             className="ul-regions__contact-link"
           >
             Entre em contato
-          </a>{' '}
-          — estamos expandindo nossa operação em São Paulo.
+          </a>
+          : estamos expandindo nossa operação em São Paulo.
         </p>
       </div>
     </section>

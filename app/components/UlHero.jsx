@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {UlIcon} from './UlIcon';
 import {hero} from '~/data/content';
@@ -25,9 +25,30 @@ function Heading({text, highlight}) {
   );
 }
 
+const AUTOPLAY_INTERVAL_MS = 2500;
+
 export function UlHero() {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const {images, avatars} = hero;
+
+  // Autoplay de 5s, igual ao setInterval do ul-hero.js do tema (que por sua
+  // vez replicava o do React original). Tinha ficado de fora no porte.
+  //
+  // Duas diferenças conscientes em relação ao tema:
+  //  - pausa no hover e no foco, para quem estiver lendo ou navegando pelo
+  //    teclado não ver a imagem trocar embaixo do cursor
+  //  - respeita prefers-reduced-motion, parando o giro automático
+  useEffect(() => {
+    if (images.length < 2 || paused) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const id = window.setInterval(
+      () => setActive((i) => (i + 1) % images.length),
+      AUTOPLAY_INTERVAL_MS,
+    );
+    return () => window.clearInterval(id);
+  }, [images.length, paused]);
 
   return (
     <section className="ul-hero">
@@ -60,7 +81,7 @@ export function UlHero() {
               {hero.buttonLabel2 && (
                 <a
                   href={hero.buttonLink2}
-                  className="ul-btn ul-btn--solid ul-btn--lg ul-btn--medium"
+                  className="ul-btn ul-btn--cream ul-btn--lg"
                 >
                   {hero.buttonLabel2}
                 </a>
@@ -90,6 +111,10 @@ export function UlHero() {
           <div className="ul-hero__media">
             <div
               className="ul-hero__frame"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onFocusCapture={() => setPaused(true)}
+              onBlurCapture={() => setPaused(false)}
               role="group"
               aria-roledescription="carousel"
               aria-label={hero.heading}
@@ -115,11 +140,11 @@ export function UlHero() {
 
               <div className="ul-hero__overlay" aria-hidden="true" />
 
-              {hero.mediaLabel && (
+              {hero.mediaLabel ? (
                 <div className="ul-hero__label">
                   <p>{hero.mediaLabel}</p>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {images.length > 1 && (

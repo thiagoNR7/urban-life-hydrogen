@@ -22,6 +22,7 @@ import ulAnimations from '~/styles/ul-animations.css?url';
 import ulSections from '~/styles/ul-sections.css?url';
 import ulShop from '~/styles/ul-shop.css?url';
 import ulApp from '~/styles/ul-app.css?url';
+import ulUpdates from '~/styles/ul-updates.css?url';
 
 import {PageLayout} from './components/PageLayout';
 
@@ -168,6 +169,7 @@ export function Layout({children}) {
         <link rel="stylesheet" href={ulSections}></link>
         <link rel="stylesheet" href={ulShop}></link>
         <link rel="stylesheet" href={ulApp}></link>
+        <link rel="stylesheet" href={ulUpdates}></link>
         <Meta />
         <Links />
       </head>

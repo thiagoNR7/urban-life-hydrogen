@@ -57,6 +57,34 @@ const PATHS = {
       <path d="m13 5 7 7-7 7" />
     </>
   ),
+  lock: (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  package: (
+    <>
+      <path d="M12 3 20 7.2v9.6L12 21l-8-4.2V7.2Z" />
+      <path d="M4 7.2 12 11.5l8-4.3" />
+      <path d="M12 11.5V21" />
+    </>
+  ),
+  'qr-code': (
+    <>
+      <rect x="4" y="4" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <path d="M14 14h2v2h-2z" />
+      <path d="M18 14h2M14 18h2m2 0h2m-2 2h2" />
+    </>
+  ),
+  user: (
+    <>
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5" />
+    </>
+  ),
   cart: (
     <>
       <circle cx="8" cy="21" r="1" />

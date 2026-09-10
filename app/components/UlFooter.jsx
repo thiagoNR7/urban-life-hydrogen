@@ -1,7 +1,15 @@
 import {Link} from 'react-router';
+import {UlIcon} from './UlIcon';
 import {footer} from '~/data/content';
 
-/** Porte de sections/ul-footer.liquid */
+/**
+ * Rodapé.
+ *
+ * Atualizado: as tags da missão agora têm ícone e viram uma lista vertical,
+ * e as zonas de entrega vêm filtradas de deliveryRegions (só as ativas).
+ * Aceita tags no formato antigo (string) para não quebrar se alguém editar
+ * o content.js à mão.
+ */
 export function UlFooter() {
   const logoWidth = Math.round((footer.logoHeight * 1914) / 2406);
 
@@ -51,11 +59,19 @@ export function UlFooter() {
           <div className="ul-footer__col">
             <h4 className="ul-footer__col-heading">Nossa missão</h4>
             <p className="ul-footer__mission-copy">{footer.missionCopy}</p>
-            <div className="ul-footer__mission-tags">
-              {footer.missionTags.map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
+            <ul className="ul-footer__mission-tags" role="list">
+              {footer.missionTags.map((tag) => {
+                const label = typeof tag === 'string' ? tag : tag.label;
+                const icon = typeof tag === 'string' ? null : tag.icon;
+
+                return (
+                  <li key={label}>
+                    {icon && <UlIcon name={icon} size={14} />}
+                    <span>{label}</span>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
 
