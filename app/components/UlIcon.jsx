@@ -57,6 +57,18 @@ const PATHS = {
       <path d="m13 5 7 7-7 7" />
     </>
   ),
+  close: (
+    <>
+      <path d="M6 6 18 18" />
+      <path d="M18 6 6 18" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </>
+  ),
   lock: (
     <>
       <rect x="5" y="11" width="14" height="9" rx="2" />

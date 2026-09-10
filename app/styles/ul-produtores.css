@@ -1,0 +1,697 @@
+/*
+  Urban Life — página de produtores
+
+  Tela nova, não existia no tema. Escrita a partir dos prints do site,
+  usando só os tokens --ul-*.
+
+  Carregar DEPOIS de ul-updates.css.
+*/
+
+.ul-producers {
+  background: var(--ul-color-background);
+  padding-block: 3.5rem 5rem;
+}
+
+/* ---------- introdução ---------- */
+.ul-producers__intro {
+  max-width: 44rem;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.ul-producers__heading {
+  margin: 0.75rem 0 1rem;
+  font-family: var(--ul-font-family);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: var(--ul-font-weight-bold);
+  line-height: 1.15;
+  color: var(--ul-color-foreground);
+}
+
+.ul-producers__subheading {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ul-color-muted-foreground);
+}
+
+/* ---------- painel de busca e filtros ---------- */
+.ul-producers__panel {
+  padding: 1.5rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-lg);
+  background: var(--ul-color-background);
+}
+
+.ul-producers__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-background);
+  transition: border-color var(--ul-transition-fast);
+}
+
+.ul-producers__search:focus-within {
+  border-color: var(--ul-color-primary);
+}
+
+.ul-producers__search svg {
+  flex-shrink: 0;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producers__search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.875rem 0;
+  border: none;
+  background: none;
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 1rem;
+}
+
+.ul-producers__search input:focus {
+  outline: none;
+}
+
+.ul-producers__search input::placeholder {
+  color: var(--ul-color-muted-foreground);
+}
+
+/* Some com o X nativo do input[type=search], que destoa do resto. */
+.ul-producers__search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.ul-producers__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.ul-producers__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.ul-producers__field label {
+  font-size: 0.8125rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producers__field select {
+  min-width: 12rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.ul-producers__field select:focus-visible {
+  outline: 2px solid var(--ul-color-primary);
+  outline-offset: 1px;
+}
+
+.ul-producers__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.625rem;
+  font-size: 0.9375rem;
+  color: var(--ul-color-foreground);
+  cursor: pointer;
+}
+
+.ul-producers__toggle input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--ul-color-primary);
+  cursor: pointer;
+}
+
+.ul-producers__clear {
+  margin-bottom: 0.125rem;
+}
+
+.ul-producers__clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- contagem e grade ---------- */
+.ul-producers__count {
+  margin: 1.75rem 0 1.25rem;
+  font-size: 0.9375rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producers__empty {
+  padding: 3rem 0;
+  text-align: center;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producers__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+  /* justify-items: start impede o card de esticar quando há só um resultado,
+     que é o caso do print. */
+  justify-items: start;
+}
+
+@media (min-width: 640px) {
+  .ul-producers__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ul-producers__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---------- card de produtor ---------- */
+.ul-producer-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 27rem;
+  overflow: hidden;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-background);
+  /* Sombra e elevação medidas no site: repouso 0/10/30/0.08, hover 0/18/40/0.1 + -4px. */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: box-shadow var(--ul-transition-fast), transform var(--ul-transition-fast);
+}
+
+.ul-producer-card:hover {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.ul-producer-card__media {
+  position: relative;
+}
+
+.ul-producer-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ul-producer-card__image--empty {
+  aspect-ratio: 16 / 9;
+  background: var(--ul-color-muted);
+}
+
+.ul-producer-card__badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-white);
+  color: var(--ul-color-primary);
+  font-size: 0.6875rem;
+  font-weight: var(--ul-font-weight-semibold);
+}
+
+.ul-producer-card__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.ul-producer-card__name {
+  margin: 0 0 0.25rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.0625rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-producer-card__horta {
+  margin: 0 0 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producer-card__location,
+.ul-producer-card__agro {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producer-card__agro {
+  color: var(--ul-color-primary);
+}
+
+.ul-producer-card__location svg,
+.ul-producer-card__agro svg {
+  flex-shrink: 0;
+}
+
+/*
+  Trunca em 2 linhas. Feito em CSS e não cortando a string no servidor: assim
+  a quebra respeita a largura real do card e não corta no meio da palavra.
+*/
+.ul-producer-card__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0.75rem 0 1.125rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producer-card__catalog {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ul-color-primary);
+  font-family: var(--ul-font-family);
+  font-size: 0.8125rem;
+  font-weight: var(--ul-font-weight-semibold);
+  text-decoration: none;
+}
+
+.ul-producer-card__catalog:hover {
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+/* ---------- toggle Agroecológico redondo ---------- */
+/*
+  Checkbox nativo é sempre quadrado e não aceita border-radius de forma
+  confiável entre navegadores. Com `appearance: none` ele perde a aparência
+  do sistema e vira um círculo desenhado por nós — mantendo o elemento
+  <input type="checkbox">, então teclado, leitor de tela e o `checked` do
+  React continuam funcionando iguais.
+
+  O tique é feito com duas bordas de um pseudo-elemento giradas 45°, em vez
+  de SVG: assim herda a cor por currentColor e não vira mais um arquivo.
+*/
+.ul-producers__toggle input {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  border: 1.5px solid var(--ul-color-border);
+  border-radius: 50%;
+  background: var(--ul-color-background);
+  cursor: pointer;
+  transition: background-color var(--ul-transition-fast),
+    border-color var(--ul-transition-fast);
+}
+
+.ul-producers__toggle input::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.28rem;
+  border-left: 2px solid var(--ul-color-white);
+  border-bottom: 2px solid var(--ul-color-white);
+  transform: rotate(-45deg) translate(1px, -1px);
+  opacity: 0;
+  transition: opacity var(--ul-transition-fast);
+}
+
+.ul-producers__toggle input:checked {
+  background: var(--ul-color-primary);
+  border-color: var(--ul-color-primary);
+}
+
+.ul-producers__toggle input:checked::before {
+  opacity: 1;
+}
+
+.ul-producers__toggle input:hover:not(:checked) {
+  border-color: var(--ul-color-primary);
+}
+
+.ul-producers__toggle input:focus-visible {
+  outline: 2px solid var(--ul-color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- card como botão ---------- */
+/*
+  O card virou <button> para abrir o modal, então precisa perder a aparência
+  de botão e voltar a ser um bloco de texto alinhado à esquerda. Os <span>
+  internos viram block porque button não aceita <p> ou <h2> dentro.
+*/
+.ul-producer-card {
+  appearance: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ul-producer-card:focus-visible {
+  outline: 2px solid var(--ul-color-primary);
+  outline-offset: 3px;
+}
+
+.ul-producer-card__media {
+  display: block;
+}
+
+.ul-producer-card__body > * {
+  display: block;
+}
+
+.ul-producer-card__name {
+  font-size: 1.0625rem;
+  font-weight: var(--ul-font-weight-bold);
+}
+
+.ul-producer-card__location,
+.ul-producer-card__agro,
+.ul-producer-card__catalog {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* ---------- modal do produtor ---------- */
+.ul-producer-modal {
+  width: min(32.5rem, calc(100vw - 2rem));
+  max-height: min(85vh, 46rem);
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: var(--ul-radius-lg);
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+}
+
+.ul-producer-modal::backdrop {
+  background: rgb(var(--ul-color-foreground-rgb) / 0.55);
+}
+
+.ul-producer-modal__inner {
+  max-height: inherit;
+  overflow-y: auto;
+}
+
+/* ---------- topo com foto ---------- */
+.ul-producer-modal__media {
+  position: relative;
+}
+
+.ul-producer-modal__image {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+
+.ul-producer-modal__image--empty {
+  aspect-ratio: 16 / 10;
+  background: var(--ul-color-muted);
+}
+
+/*
+  Degradê só na metade de baixo, para o título branco ter contraste sem
+  escurecer a foto inteira.
+*/
+.ul-producer-modal__scrim {
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(0 0 0 / 0.72)
+  );
+}
+
+.ul-producer-modal__close {
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ul-radius-pill);
+  background: rgb(0 0 0 / 0.35);
+  color: var(--ul-color-white);
+  cursor: pointer;
+  transition: background-color var(--ul-transition-fast);
+}
+
+.ul-producer-modal__close:hover {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.ul-producer-modal__close:focus-visible {
+  outline: 2px solid var(--ul-color-white);
+  outline-offset: 2px;
+}
+
+.ul-producer-modal__headline {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.125rem;
+  color: var(--ul-color-white);
+}
+
+.ul-producer-modal__title {
+  margin: 0 0 0.375rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.375rem;
+  font-weight: var(--ul-font-weight-bold);
+  line-height: 1.2;
+}
+
+.ul-producer-modal__location {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.ul-producer-modal__location svg {
+  flex-shrink: 0;
+}
+
+/* ---------- corpo ---------- */
+.ul-producer-modal__body {
+  padding: 1.5rem;
+}
+
+.ul-producer-modal__practices,
+.ul-producer-modal__crops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ul-producer-modal__practices li {
+  padding: 0.5rem 1rem;
+  border-radius: var(--ul-radius-pill);
+  background: rgb(var(--ul-color-primary-rgb) / 0.1);
+  color: var(--ul-color-primary);
+  font-size: 0.875rem;
+}
+
+.ul-producer-modal__crops li {
+  padding: 0.4375rem 0.875rem;
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-secondary);
+  color: var(--ul-color-secondary-foreground);
+  font-size: 0.875rem;
+}
+
+.ul-producer-modal__section {
+  margin-top: 1.75rem;
+}
+
+/*
+  Os títulos internos do site têm tracking largo, o que dá a impressão de
+  monoespaçada. É espaçamento, não outra família — o projeto não carrega
+  web font (ver o comentário no topo de ul-tokens.css).
+*/
+.ul-producer-modal__section-title {
+  margin: 0 0 0.75rem;
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-bold);
+  letter-spacing: 0.06em;
+  color: var(--ul-color-foreground);
+}
+
+.ul-producer-modal__story {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producer-modal__cta {
+  width: 100%;
+  margin-top: 1.75rem;
+  justify-content: center;
+}
+
+/* ---------- modal: correções de espaçamento ---------- */
+/*
+  Os blocos internos deixaram de ser <section> e viraram <div>: alguma regra
+  global de `section` no projeto somava margem e abria vãos de ~100px onde
+  deveria haver ~25px. Div escapa disso sem precisar caçar a regra.
+
+  As margens abaixo são explícitas e com especificidade suficiente para não
+  serem sobrescritas por reset.css ou app.css do esqueleto.
+*/
+.ul-producer-modal__inner {
+  overflow-x: hidden;
+}
+
+.ul-producer-modal__body > .ul-producer-modal__section {
+  margin: 1.5rem 0 0;
+}
+
+.ul-producer-modal__body .ul-producer-modal__section-title {
+  margin: 0 0 0.625rem;
+}
+
+.ul-producer-modal__body .ul-producer-modal__story {
+  margin: 0;
+}
+
+.ul-producer-modal__body .ul-producer-modal__practices,
+.ul-producer-modal__body .ul-producer-modal__crops {
+  margin: 0;
+  padding: 0;
+}
+
+.ul-producer-modal__body .ul-producer-modal__practices li,
+.ul-producer-modal__body .ul-producer-modal__crops li {
+  margin: 0;
+}
+
+.ul-producer-modal__body .ul-producer-modal__cta {
+  margin-top: 1.5rem;
+}
+
+/* ---------- modal: foto e botão ---------- */
+/*
+  A altura da foto agora é do contêiner, não da imagem. Deixar o <Image> do
+  Hydrogen se dimensionar sozinho não firmou — a faixa colapsava para ~90px.
+  Com aspect-ratio no pai e a imagem preenchendo por absolute, a altura é
+  garantida antes mesmo de a foto carregar (e some o pulo de layout).
+
+  16/7 foi medido no site: 508px de largura por 220 de altura.
+*/
+.ul-producer-modal__media {
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+}
+
+.ul-producer-modal__media > img,
+.ul-producer-modal__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ul-producer-modal__image--empty {
+  aspect-ratio: auto;
+}
+
+/*
+  width: 100% mais padding lateral estoura o contêiner quando o box-sizing
+  não é border-box — era o botão vazando pela direita.
+*/
+.ul-producer-modal__body .ul-producer-modal__cta {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ---------- card: correções finais ---------- */
+/*
+  O `display: block` que apliquei nos filhos do card (para o <button> aceitar
+  o conteúdo) matava o `display: -webkit-box` da descrição — e sem ele o
+  line-clamp não corta nada, então o texto saía inteiro em vez das duas
+  linhas com reticências. Restaurado aqui, depois daquela regra.
+*/
+.ul-producer-card__body > .ul-producer-card__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*
+  Mesma técnica do modal: a altura vem do contêiner, não da imagem, então
+  não depende de quando a foto carrega. 16/7 medido no site — 426px de
+  largura por 191 de altura.
+*/
+.ul-producer-card__media {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+}
+
+.ul-producer-card__media > img,
+.ul-producer-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Sobrescreve o img{border-radius:4px} global do esqueleto (app.css): o
+     card já clipa a imagem pelo seu próprio raio, então a da imagem tem que
+     ser 0, como medido no site. */
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.ul-producer-card__image--empty {
+  position: static;
+  aspect-ratio: auto;
+}
+
+/* Padding medido no site: 20px nas laterais e em cima, 24px embaixo. */
+.ul-producer-card__body {
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.ul-producer-card__catalog {
+  margin-top: 0.25rem;
+}

@@ -184,7 +184,7 @@ export default function Product() {
             <UlIcon name="truck" size={16} />
             <span>
               Entrega programada por região. O dia depende da sua zona — veja as{' '}
-              <a href="/#produtores" className="ul-regions__contact-link">
+              <a href="/#entrega" className="ul-regions__contact-link">
                 zonas atendidas
               </a>
               .

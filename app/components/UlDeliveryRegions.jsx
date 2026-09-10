@@ -14,7 +14,7 @@ import {deliveryRegions} from '~/data/content';
  */
 export function UlDeliveryRegions() {
   return (
-    <section id="produtores" className="ul-regions">
+    <section id="entrega" className="ul-regions">
       <div className="ul-container">
         <div className="ul-regions__intro ul-reveal">
           <span className="ul-eyebrow ul-regions__eyebrow">

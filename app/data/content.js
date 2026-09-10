@@ -14,7 +14,7 @@ export const header = {
   menu: [
     {label: 'Início', href: '/'},
     {label: 'Produtos em destaque', href: '/collections/all'},
-    {label: 'Produtores', href: '/#produtores'},
+    {label: 'Produtores', href: '/pages/produtores'},
     {label: 'Como funciona', href: '/#como-funciona'},
   ],
   showAccount: true,
@@ -155,7 +155,7 @@ export const footer = {
   ],
   nav: [
     {label: 'Cestas da semana', href: '/collections/all'},
-    {label: 'Produtores parceiros', href: '/#produtores'},
+    {label: 'Produtores parceiros', href: '/pages/produtores'},
     {label: 'Sobre a Urban Life', href: '/pages/sobre'},
     {label: 'Termos de Uso', href: '/policies/terms-of-service'},
     {label: 'Privacidade', href: '/policies/privacy-policy'},
