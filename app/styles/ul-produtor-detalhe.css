@@ -1,0 +1,624 @@
+/*
+  Urban Life — página de detalhe do produtor (/pages/produtores/{handle})
+
+  Tela nova. As medidas vieram dos prints do site e ainda merecem uma passada
+  de conferência no DOM contra a produção.
+
+  Carregar depois de ul-produtores.css.
+*/
+
+.ul-producer-page {
+  background: var(--ul-color-background);
+  padding-block: 2.5rem 4rem;
+}
+
+.ul-producer-page__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .ul-producer-page__grid {
+    /* No site a coluna da esquerda é um pouco maior: 965 contra 810 px. */
+    grid-template-columns: 1.18fr 1fr;
+    gap: 3.5rem;
+  }
+}
+
+/* ---------- galeria ---------- */
+.ul-gallery {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  border-radius: var(--ul-radius-lg);
+  background: rgb(var(--ul-color-primary-rgb) / 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.ul-gallery--empty {
+  background: var(--ul-color-muted);
+}
+
+.ul-gallery__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--ul-transition-base);
+}
+
+.ul-gallery__slide--active {
+  opacity: 1;
+}
+
+.ul-gallery__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ul-gallery__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ul-radius-pill);
+  background: rgb(var(--ul-color-background-rgb) / 0.85);
+  color: var(--ul-color-foreground);
+  cursor: pointer;
+  transition: background-color var(--ul-transition-fast);
+}
+
+.ul-gallery__arrow:hover {
+  background: var(--ul-color-background);
+}
+
+.ul-gallery__arrow--prev {
+  left: 1.25rem;
+}
+
+.ul-gallery__arrow--next {
+  right: 1.25rem;
+}
+
+.ul-gallery__dots {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ul-gallery__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ul-radius-pill);
+  background: rgb(255 255 255 / 0.55);
+  cursor: pointer;
+}
+
+.ul-gallery__dot--active {
+  background: var(--ul-color-white);
+}
+
+/* ---------- cartão de divulgação ---------- */
+.ul-share {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-white);
+}
+
+.ul-share__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--ul-font-family);
+  font-size: 1rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-share__title svg {
+  color: var(--ul-color-primary);
+}
+
+.ul-share__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-share__row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.ul-share__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-background);
+  color: var(--ul-color-muted-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 0.875rem;
+}
+
+.ul-share__copy {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-background);
+  color: var(--ul-color-primary);
+  font-family: var(--ul-font-family);
+  font-size: 0.875rem;
+  font-weight: var(--ul-font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ul-share__copy:hover {
+  background: var(--ul-color-secondary);
+}
+
+.ul-share__cta {
+  box-sizing: border-box;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ---------- coluna da direita ---------- */
+.ul-producer-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  color: var(--ul-color-primary);
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-medium);
+  text-decoration: none;
+}
+
+.ul-producer-page__title {
+  margin: 0 0 0.625rem;
+  font-family: var(--ul-font-family);
+  font-size: clamp(2rem, 3.4vw, 2.75rem);
+  font-weight: var(--ul-font-weight-bold);
+  line-height: 1.1;
+  color: var(--ul-color-foreground);
+}
+
+.ul-producer-page__location {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-producer-page__badge {
+  display: inline-block;
+  margin-top: 0.125rem;
+  padding: 0.375rem 1rem;
+  border-radius: var(--ul-radius-pill);
+  background: rgb(var(--ul-color-primary-rgb) / 0.1);
+  color: var(--ul-color-primary);
+  font-size: 0.75rem;
+  font-weight: var(--ul-font-weight-semibold);
+  line-height: 1.4;
+}
+
+.ul-producer-page__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 42rem;
+  margin: 1.5rem 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ul-color-foreground);
+}
+
+/* ---------- cestas ---------- */
+.ul-baskets {
+  margin-top: 1.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-lg);
+  background: var(--ul-color-white);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.ul-baskets__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.0625rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-baskets__title svg {
+  color: var(--ul-color-primary);
+}
+
+.ul-baskets__subtitle {
+  margin: 0 0 1.125rem;
+  font-size: 0.875rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__sizes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+}
+
+.ul-baskets__size {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.0625rem;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  cursor: pointer;
+  transition: background-color var(--ul-transition-fast);
+}
+
+.ul-baskets__size--active {
+  background: var(--ul-color-primary);
+  color: var(--ul-color-white);
+}
+
+.ul-baskets__letter {
+  font-size: 1rem;
+  font-weight: var(--ul-font-weight-bold);
+}
+
+.ul-baskets__name {
+  font-size: 0.875rem;
+  font-weight: var(--ul-font-weight-semibold);
+}
+
+.ul-baskets__count {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.ul-baskets__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.125rem;
+}
+
+.ul-baskets__selected {
+  margin: 0;
+  font-family: var(--ul-font-family);
+  font-size: 1.0625rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-baskets__contains {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem 1rem;
+  margin: 0.875rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ul-baskets__items li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--ul-color-foreground);
+}
+
+.ul-baskets__items svg {
+  flex-shrink: 0;
+  color: var(--ul-color-primary);
+}
+
+.ul-baskets__customize {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ul-color-border);
+}
+
+.ul-baskets__customize-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem;
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-baskets__customize-title svg {
+  color: var(--ul-color-primary);
+}
+
+.ul-baskets__customize-copy {
+  margin: 0 0 0.875rem;
+  font-size: 0.875rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__swap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ul-baskets__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.ul-baskets__field label {
+  font-size: 0.8125rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.ul-baskets__field select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ul-baskets__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.ul-baskets__price {
+  margin: 0;
+  font-family: var(--ul-font-family);
+  font-size: 1.625rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-baskets__price--missing {
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__stock {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ul-color-primary);
+}
+
+.ul-baskets__stock--out {
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-baskets__cta {
+  white-space: nowrap;
+}
+
+.ul-baskets__cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- produtos da horta ---------- */
+.ul-horta-products {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--ul-color-border);
+}
+
+.ul-horta-products__title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0 0 1.75rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.375rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-horta-products__title svg {
+  color: var(--ul-color-primary);
+}
+
+.ul-horta-products__empty {
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-horta-products__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  justify-items: start;
+}
+
+@media (min-width: 768px) {
+  .ul-horta-products__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ul-horta-products__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ul-horta-card {
+  width: 100%;
+  max-width: 22rem;
+  overflow: hidden;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-background);
+}
+
+.ul-horta-card__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--ul-color-secondary);
+}
+
+.ul-horta-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ul-horta-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--ul-color-primary);
+}
+
+/* Selo escuro, como no site — diferente do selo branco do card de produtor. */
+.ul-horta-card__badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-foreground);
+  color: var(--ul-color-white);
+  font-size: 0.6875rem;
+  font-weight: var(--ul-font-weight-semibold);
+}
+
+.ul-horta-card__body {
+  padding: 1.25rem;
+}
+
+.ul-horta-card__title {
+  margin: 0 0 0.375rem;
+  font-family: var(--ul-font-family);
+  font-size: 1rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-horta-card__price {
+  margin: 0 0 0.875rem;
+  font-size: 1rem;
+  font-weight: var(--ul-font-weight-semibold);
+  color: var(--ul-color-primary);
+}
+
+.ul-horta-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--ul-color-primary);
+  font-size: 0.875rem;
+  font-weight: var(--ul-font-weight-semibold);
+  text-decoration: none;
+}
+
+/* ---------- ajustes medidos contra a produção ---------- */
+/*
+  Proporção das colunas: na referência a galeria ocupa 965px e a coluna da
+  direita 642 — razão de 1,5 para 1, não 1,18. O gap entre elas é 46px.
+
+  A razão errada afetava mais do que o layout: mudava onde a descrição
+  quebra de linha, então nem o texto batia.
+*/
+@media (min-width: 1024px) {
+  .ul-producer-page__grid {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.875rem;
+  }
+}
+
+/*
+  Título: fórmula exata copiada da regra `.ul-producer-profile__name` do
+  tema (lida via document.styleSheets, não só o computed style — o computed
+  varia com a largura da janela e tinha levado a um clamp errado aqui antes).
+  Acima de ~1025px de viewport ela satura no teto, 2.375rem (38px).
+*/
+.ul-producer-page__title {
+  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.375rem);
+  letter-spacing: -0.01em;
+}
+
+/* Seletor de tamanho: 62px de altura na referência (padding 6px/8px), sem
+   divisória entre os três — removida acima, no border-right. */
+.ul-baskets__size {
+  padding: 0.375rem 0.5rem;
+}
+
+.ul-baskets__letter {
+  font-size: 0.9375rem;
+  line-height: 1.2;
+}
+
+.ul-baskets__name {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.ul-baskets__count {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}

@@ -24,6 +24,7 @@ import ulShop from '~/styles/ul-shop.css?url';
 import ulApp from '~/styles/ul-app.css?url';
 import ulUpdates from '~/styles/ul-updates.css?url';
 import ulProdutores from '~/styles/ul-produtores.css?url';
+import ulProdutorDetalhe from '~/styles/ul-produtor-detalhe.css?url';
 
 import {PageLayout} from './components/PageLayout';
 
@@ -172,6 +173,7 @@ export function Layout({children}) {
         <link rel="stylesheet" href={ulApp}></link>
         <link rel="stylesheet" href={ulUpdates}></link>
         <link rel="stylesheet" href={ulProdutores}></link>
+        <link rel="stylesheet" href={ulProdutorDetalhe}></link>
         <Meta />
         <Links />
       </head>

@@ -8,6 +8,25 @@
   Usa apenas tokens --ul-*. Nenhum valor de cor solto.
 */
 
+/*
+  ---------- box-sizing do .ul-container ----------
+
+  .ul-container (ul-base.css, fiel ao tema — não mexer lá) nunca definiu
+  box-sizing, então fica no content-box padrão do browser. Com max-width e
+  padding-inline fixos, isso soma o padding por cima do max-width: acima do
+  breakpoint de 1400px o contêiner renderiza 1464px (1400 + 32px de cada
+  lado) em vez de 1400px.
+
+  No site em produção esse mesmo .ul-container é box-sizing: border-box, aí
+  o max-width já inclui o padding e o contêiner fecha no valor certo. Sem
+  isso o site inteiro fica 64px mais largo que a produção em qualquer tela
+  ≥1400px — não é bug de uma página só, por isso a correção é global aqui,
+  na camada de overrides, em vez de escopada num componente.
+*/
+.ul-container {
+  box-sizing: border-box;
+}
+
 /* ---------- botão creme (segundo botão do hero) ---------- */
 .ul-btn--cream {
   background: var(--ul-color-muted, #EDE9E0);
