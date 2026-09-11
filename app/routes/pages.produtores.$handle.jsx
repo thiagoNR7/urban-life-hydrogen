@@ -7,7 +7,7 @@ import {UlShareCard} from '~/components/UlShareCard';
 import {UlBasketPicker} from '~/components/UlBasketPicker';
 import {UlHortaProductCard} from '~/components/UlHortaProductCard';
 import {
-  BASKET_ITEMS,
+  BASKET_ITEM_METAFIELDS,
   BASKET_PRODUCT_HANDLE,
   BASKET_SIZES,
   PRODUCER_FIELDS,
@@ -45,15 +45,18 @@ export async function loader({params, context, request}) {
   const [{products}, {product: basketProduct}] = await Promise.all([
     storefront.query(HORTA_PRODUCTS_QUERY, {
       variables: {
-        query: `vendor:'${producer.name}'`,
-        first: 12,
+        first: 100,
         namespace: PRODUCT_PRODUCER_METAFIELD.namespace,
         key: PRODUCT_PRODUCER_METAFIELD.key,
       },
       cache: storefront.CacheShort(),
     }),
     storefront.query(BASKET_QUERY, {
-      variables: {handle: BASKET_PRODUCT_HANDLE},
+      variables: {
+        handle: BASKET_PRODUCT_HANDLE,
+        identifiers: Object.values(BASKET_ITEM_METAFIELDS),
+      },
+      // Cache curto: a composição da cesta muda toda semana.
       cache: storefront.CacheShort(),
     }),
   ]);
@@ -61,15 +64,18 @@ export async function loader({params, context, request}) {
   const baskets = toBaskets(basketProduct);
 
   /**
-   * Os produtos da horta são os que apontam para este produtor pelo metafield.
-   * A query traz um lote e o filtro acontece aqui, porque a Storefront API
-   * não permite buscar por referência de metaobject na string de busca.
+   * Ficam os produtos cujo metacampo `custom.produtor` aponta para este
+   * produtor. Se o metacampo não estiver preenchido, a referência vem nula
+   * e o produto fica de fora — melhor seção vazia do que produto de outra
+   * horta na página errada.
    *
-   * Se o metafield ainda não estiver configurado, todos vêm com referência
-   * nula e a seção aparece vazia — em vez de listar produtos errados.
+   * A cesta sai da lista: ela já tem o seletor P/M/G logo acima, e repetir
+   * confunde.
    */
   const hortaProducts = (products?.nodes ?? []).filter(
-    (product) => product.producer?.reference?.handle === handle,
+    (product) =>
+      product.producer?.reference?.handle === handle &&
+      product.handle !== BASKET_PRODUCT_HANDLE,
   );
 
   return {
@@ -154,12 +160,45 @@ function toProducer(node) {
 function toBaskets(product) {
   const variants = product?.variants?.nodes ?? [];
 
+  // Chave do metacampo -> letra do tamanho, para casar um com o outro.
+  const keyToLetter = new Map(
+    Object.entries(BASKET_ITEM_METAFIELDS).map(([letter, {key}]) => [
+      key,
+      letter,
+    ]),
+  );
+
+  /**
+   * Metacampo do tipo lista chega como JSON em string. O catch trata o caso
+   * de alguém trocar o tipo para texto simples no admin: aí divide pelos
+   * separadores usuais em vez de quebrar a página.
+   */
+  const itemsByLetter = {};
+  for (const field of product?.metafields ?? []) {
+    if (!field?.value) continue;
+    const letter = keyToLetter.get(field.key);
+    if (!letter) continue;
+
+    try {
+      const parsed = JSON.parse(field.value);
+      itemsByLetter[letter] = Array.isArray(parsed)
+        ? parsed.map((s) => String(s).trim()).filter(Boolean)
+        : [String(parsed).trim()];
+    } catch {
+      itemsByLetter[letter] = field.value
+        .split(/[•|\n,]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+  }
+
   return variants
     .map((variant) => {
       const match = variant.title.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
       const name = (match ? match[1] : variant.title).trim();
       const letter = (match ? match[2] : variant.title.charAt(0)).trim();
-      const meta = BASKET_SIZES[letter] ?? {order: 99, itemCount: null};
+      const meta = BASKET_SIZES[letter] ?? {order: 99};
+      const items = itemsByLetter[letter] ?? [];
 
       return {
         id: variant.id,
@@ -167,8 +206,10 @@ function toBaskets(product) {
         letter,
         name,
         order: meta.order,
-        itemCount: meta.itemCount,
-        items: BASKET_ITEMS[letter] ?? [],
+        // A contagem é o tamanho da lista, não um número à parte: assim
+        // "Contém 9 itens" nunca discorda dos itens listados logo abaixo.
+        itemCount: items.length || null,
+        items,
         price: variant.price,
         available: variant.availableForSale,
       };
@@ -280,14 +321,20 @@ const PRODUCER_QUERY = `#graphql
  * Produtos da horta, filtrados por vendor. Se a ligação entre produto e
  * produtor for outra na sua loja, é esta variável `query` que muda.
  */
+/**
+ * Traz um lote de produtos com o metacampo do produtor e filtra em memória.
+ *
+ * Sem filtro de busca de propósito: o vínculo produto-produtor é uma
+ * referência de metaobject, e a Storefront API não permite buscar por isso
+ * na string de `query`. Filtrar por `vendor` não serve — a cesta e o pesto
+ * têm vendor "Urban Life", não o nome da horta.
+ *
+ * Com catálogo pequeno isso é barato. Passando de algumas centenas de
+ * produtos, vale criar uma coleção por produtor e consultar por ela.
+ */
 const HORTA_PRODUCTS_QUERY = `#graphql
-  query HortaProducts(
-    $query: String!
-    $first: Int!
-    $namespace: String!
-    $key: String!
-  ) {
-    products(first: $first, query: $query) {
+  query HortaProducts($first: Int!, $namespace: String!, $key: String!) {
+    products(first: $first) {
       nodes {
         id
         title
@@ -305,11 +352,21 @@ const HORTA_PRODUCTS_QUERY = `#graphql
   }
 `;
 
+/**
+ * A cesta traz os itens de cada tamanho junto, num metacampo por tamanho.
+ *
+ * São campos do PRODUTO, não da variante — foi assim que a loja modelou.
+ * Como são do tipo lista, o `value` vem como JSON em string.
+ */
 const BASKET_QUERY = `#graphql
-  query Basket($handle: String!) {
+  query Basket($handle: String!, $identifiers: [HasMetafieldsIdentifier!]!) {
     product(handle: $handle) {
       handle
       title
+      metafields(identifiers: $identifiers) {
+        key
+        value
+      }
       variants(first: 10) {
         nodes {
           id

@@ -90,30 +90,29 @@ export const BASKET_PRODUCT_HANDLE = 'cesta-semanal-de-hortalicas-teste';
  * Se um tamanho novo for criado no Shopify sem entrada aqui, ele ainda
  * aparece no seletor — só sem a contagem de itens.
  *
- * TODO: a contagem (5 / 9 / 14) provavelmente é um metafield da variante.
- * Enquanto não confirmamos, fica aqui.
+ * A contagem de itens não está aqui de propósito: ela é o tamanho da lista
+ * do metacampo. Assim "Contém 9 itens" nunca discorda dos itens mostrados.
  */
 export const BASKET_SIZES = {
-  P: {order: 1, itemCount: 5},
-  M: {order: 2, itemCount: 9},
-  G: {order: 3, itemCount: 14},
+  P: {order: 1},
+  M: {order: 2},
+  G: {order: 3},
 };
 
 /**
- * Itens da cesta da semana.
+ * Metacampos do produto de cesta.
  *
- * TODO: isto NÃO pode viver em código — muda toda semana. "Alface lisa",
- * "Cebolinha" e companhia não existem como produtos na loja (conferido:
- * os 17 produtos são os de exemplo, a cesta e o pesto), então a lista vem
- * de um metafield do produto ou da variante.
+ * Confirmado no admin (Configurações → Metacampos e metaobjetos → Produtos).
+ * As chaves são curtas: `itens_cesta_p`, não `itens_da_cesta_pequena`.
  *
- * Assim que soubermos o namespace e a chave, isto vira uma leitura de
- * metafield no loader e este objeto some.
+ * O tipo é LISTA de texto de linha única, então a Storefront API entrega
+ * JSON — `["Alface lisa","Couve"]`. O `•` que aparece no admin é só o
+ * separador visual da interface, não faz parte do valor.
  */
-export const BASKET_ITEMS = {
-  P: ['Alface lisa', 'Couve', 'Cebolinha', 'Salsinha', 'Rúcula'],
-  M: [],
-  G: [],
+export const BASKET_ITEM_METAFIELDS = {
+  P: {namespace: 'custom', key: 'itens_cesta_p'},
+  M: {namespace: 'custom', key: 'itens_cesta_m'},
+  G: {namespace: 'custom', key: 'itens_cesta_g'},
 };
 
 /**
@@ -154,7 +153,7 @@ export const producerDetailUi = {
   forLabel: 'Por',
   forPlaceholder: 'Selecionar substituto',
   available: 'Disponível',
-  unavailable: 'Indisponível',
+  unavailable: 'Esgotado',
   chooseprefix: 'Escolher Cesta',
   productsTitle: 'Produtos da Horta',
   productLink: 'Ver produto',

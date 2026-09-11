@@ -1,6 +1,5 @@
 import {useLoaderData} from 'react-router';
 import {UlProductCard} from '~/components/UlProductCard';
-import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
 
 /**
  * Página de coleção. Catálogo em cache longo — o que muda aqui é raro,
@@ -75,8 +74,33 @@ export default function Collection() {
   );
 }
 
+/**
+ * O fragmento está escrito aqui dentro, e não importado de lib/fragments.
+ *
+ * Interpolar com template string funciona em runtime — a string final tem o
+ * fragmento — mas o codegen analisa o arquivo estaticamente e não resolve a
+ * interpolação, então acusava "Unknown fragment ProductCard" a cada build.
+ */
 const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_CARD_FRAGMENT}
+  fragment ProductCard on Product {
+    id
+    title
+    handle
+    availableForSale
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+  }
   query Collection(
     $handle: String!
     $first: Int!

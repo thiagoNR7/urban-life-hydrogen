@@ -13,15 +13,13 @@
 
   .ul-container (ul-base.css, fiel ao tema — não mexer lá) nunca definiu
   box-sizing, então fica no content-box padrão do browser. Com max-width e
-  padding-inline fixos, isso soma o padding por cima do max-width: acima do
-  breakpoint de 1400px o contêiner renderiza 1464px (1400 + 32px de cada
-  lado) em vez de 1400px.
+  padding-inline fixos, isso soma o padding por cima do max-width em vez de
+  dentro dele — em qualquer largura, não só acima do breakpoint de 1400px:
+  abaixo do primeiro breakpoint (640px) sobra só `width:100% + padding-
+  inline:2rem`, que sozinho já estoura a tela em 64px no mobile.
 
-  No site em produção esse mesmo .ul-container é box-sizing: border-box, aí
-  o max-width já inclui o padding e o contêiner fecha no valor certo. Sem
-  isso o site inteiro fica 64px mais largo que a produção em qualquer tela
-  ≥1400px — não é bug de uma página só, por isso a correção é global aqui,
-  na camada de overrides, em vez de escopada num componente.
+  Vale pro site inteiro, por isso mora aqui sem media query — não é ajuste
+  de mobile nem de desktop, é o box model correto do contêiner.
 */
 .ul-container {
   box-sizing: border-box;
@@ -234,4 +232,101 @@
 .ul-btn:active,
 .ul-btn:visited {
   text-decoration: none;
+}
+
+/* ---------- menu de conta ---------- */
+/*
+  Substitui o círculo simples por um botão com popover, como na produção.
+  As regras de .ul-header__account continuam acima e não são usadas mais;
+  ficam por segurança caso algum ponto ainda referencie a classe antiga.
+*/
+.ul-account {
+  position: relative;
+}
+
+.ul-account__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--ul-radius-pill, 999px);
+  background: var(--ul-color-navbar-dark);
+  color: var(--ul-color-white);
+  cursor: pointer;
+  transition: opacity var(--ul-transition-fast, 150ms ease);
+}
+
+.ul-account__trigger:hover {
+  opacity: 0.85;
+}
+
+.ul-account__initial {
+  font-family: var(--ul-font-family);
+  font-size: 0.875rem;
+  font-weight: var(--ul-font-weight-semibold, 600);
+  line-height: 1;
+}
+
+.ul-account__popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  min-width: 17rem;
+  padding: 1.25rem;
+  border-radius: var(--ul-radius-lg);
+  background: var(--ul-color-white);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+}
+
+.ul-account__greeting {
+  margin: 0 0 0.25rem;
+  font-family: var(--ul-font-family);
+  font-size: 1rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-account__email,
+.ul-account__loading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ul-color-muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.ul-account__actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+
+.ul-account__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex: 1;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  color: var(--ul-color-foreground);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: background-color var(--ul-transition-fast);
+}
+
+.ul-account__action:hover {
+  background: var(--ul-color-secondary);
+  text-decoration: none;
+}
+
+.ul-account__action--solid {
+  border-color: var(--ul-color-primary);
+  background: var(--ul-color-primary);
+  color: var(--ul-color-white);
 }

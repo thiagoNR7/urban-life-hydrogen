@@ -11,7 +11,7 @@ import {
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Profile'}];
+  return [{title: 'Perfil | Urban Life'}];
 };
 
 /**
@@ -86,49 +86,52 @@ export default function AccountProfile() {
   /** @type {ActionReturnData} */
   const action = useActionData();
   const customer = action?.customer ?? account?.customer;
+  const isSaving = state !== 'idle';
 
   return (
-    <div className="account-profile">
-      <h2>My profile</h2>
-      <br />
+    <div className="ul-conta__card">
+      <h2 className="ul-conta__card-title">Informações pessoais</h2>
+
       <Form method="PUT">
-        <legend>Personal information</legend>
-        <fieldset>
-          <label htmlFor="firstName">First name</label>
+        <div className="ul-conta__field">
+          <label htmlFor="firstName">Nome</label>
           <input
             id="firstName"
             name="firstName"
             type="text"
             autoComplete="given-name"
-            placeholder="First name"
-            aria-label="First name"
+            placeholder="Nome"
+            aria-label="Nome"
             defaultValue={customer.firstName ?? ''}
             minLength={2}
           />
-          <label htmlFor="lastName">Last name</label>
+        </div>
+
+        <div className="ul-conta__field">
+          <label htmlFor="lastName">Sobrenome</label>
           <input
             id="lastName"
             name="lastName"
             type="text"
             autoComplete="family-name"
-            placeholder="Last name"
-            aria-label="Last name"
+            placeholder="Sobrenome"
+            aria-label="Sobrenome"
             defaultValue={customer.lastName ?? ''}
             minLength={2}
           />
-        </fieldset>
-        {action?.error ? (
-          <p>
-            <mark>
-              <small>{action.error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
-        </button>
+        </div>
+
+        {action?.error && <p className="ul-conta__error">{action.error}</p>}
+
+        <div className="ul-conta__form-actions">
+          <button
+            type="submit"
+            className="ul-btn ul-btn--solid"
+            disabled={isSaving}
+          >
+            {isSaving ? 'Salvando' : 'Salvar alterações'}
+          </button>
+        </div>
       </Form>
     </div>
   );

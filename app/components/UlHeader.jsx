@@ -1,6 +1,7 @@
 import {Suspense, useState} from 'react';
 import {Await, Link, useRouteLoaderData} from 'react-router';
 import {UlIcon} from './UlIcon';
+import {UlAccountMenu} from './UlAccountMenu';
 import {header} from '~/data/content';
 
 /**
@@ -53,30 +54,7 @@ export function UlHeader() {
         </ul>
 
         <div className="ul-header__actions">
-          {header.showAccount && (
-            <Link
-              to="/account"
-              className="ul-header__account"
-              aria-label="Minha conta"
-            >
-              <Suspense fallback={<UlIcon name="user" size={18} />}>
-                <Await
-                  resolve={rootData?.isLoggedIn}
-                  errorElement={<UlIcon name="user" size={18} />}
-                >
-                  {(isLoggedIn) =>
-                    isLoggedIn ? (
-                      <span className="ul-header__account-initial">
-                        {getInitial(rootData)}
-                      </span>
-                    ) : (
-                      <UlIcon name="user" size={18} />
-                    )
-                  }
-                </Await>
-              </Suspense>
-            </Link>
-          )}
+          {header.showAccount && <UlAccountMenu />}
 
           <Link to="/cart" className="ul-header__cart-link" aria-label="Carrinho">
             <UlIcon name="cart" size={20} className="ul-header__cart-icon" />
@@ -148,14 +126,4 @@ export function UlHeader() {
       </div>
     </div>
   );
-}
-
-/**
- * O root loader não expõe o nome do cliente, só se está logado. Até a
- * Customer Account API entrar, a inicial vem do nome da loja. Trocar por
- * `customer.firstName` quando a query de conta existir.
- */
-function getInitial(rootData) {
-  const name = rootData?.header?.shop?.name ?? 'Urban Life';
-  return name.trim().charAt(0).toUpperCase();
 }

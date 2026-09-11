@@ -1,0 +1,234 @@
+/*
+  Urban Life — ajustes de mobile
+
+  Carregar por ÚLTIMO, depois de todos os outros.
+
+  A causa do transbordamento horizontal é quase sempre a mesma: filhos de
+  grid e flex nascem com `min-width: auto`, então se recusam a encolher
+  abaixo da largura do próprio conteúdo. Um select de 12rem, um botão com
+  `white-space: nowrap` ou uma palavra longa empurram a página inteira e
+  criam rolagem lateral — que em celular é o pior defeito possível, porque
+  a pessoa some com o conteúdo sem entender o que fez.
+
+  A correção é `min-width: 0` nos contêineres certos, mais layouts que
+  viram uma coluna quando não cabem. Evitei `overflow-x: hidden` no body:
+  isso esconde o sintoma e deixa o defeito lá, aparecendo de outras formas.
+*/
+
+/* ---------- permitir encolher ---------- */
+.ul-producers__field,
+.ul-producers__search,
+.ul-baskets__field,
+.ul-baskets__footer,
+.ul-baskets__price-block,
+.ul-order__body,
+.ul-share__row,
+.ul-producer-page__left,
+.ul-producer-page__right {
+  min-width: 0;
+}
+
+/* Palavras longas (nome de horta, e-mail) quebram em vez de empurrar. */
+.ul-producer-card__name,
+.ul-producer-page__title,
+.ul-producers__heading,
+.ul-conta__greeting,
+.ul-share__input {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  /* ---------- filtros de produtores ---------- */
+  /*
+    Os selects tinham min-width: 12rem. Dois deles lado a lado, mais o
+    toggle e o botão, não cabem em 390px de tela.
+  */
+  .ul-producers__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ul-producers__field {
+    width: 100%;
+  }
+
+  .ul-producers__field select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ul-producers__toggle {
+    padding-bottom: 0;
+  }
+
+  .ul-producers__clear {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .ul-producers__panel {
+    padding: 1.125rem;
+  }
+
+  /* ---------- card de produtor ---------- */
+  .ul-producer-card {
+    max-width: none;
+  }
+
+  /* ---------- cestas ---------- */
+  /*
+    Uma coluna. Duas colunas com "Cenoura - aprox. 300 g" só produz quebra
+    feia no meio da medida.
+  */
+  .ul-baskets__items,
+  .ul-baskets__swap {
+    grid-template-columns: 1fr;
+  }
+
+  .ul-baskets__field select {
+    width: 100%;
+  }
+
+  /*
+    O rótulo do tamanho encolhe, mas a área de toque não: 56px de altura
+    mantém o alvo confortável mesmo com a fonte menor.
+  */
+  .ul-baskets__sizes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ul-baskets__size {
+    min-height: 56px;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .ul-baskets__name {
+    font-size: 0.75rem;
+  }
+
+  .ul-baskets__count {
+    font-size: 0.6875rem;
+  }
+
+  .ul-baskets__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  /* Preço em cima, botão largo embaixo — o botão com nowrap era o que mais
+     empurrava a página. */
+  .ul-baskets__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .ul-baskets__cta {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
+
+  .ul-baskets,
+  .ul-share {
+    padding: 1.125rem;
+  }
+
+  /* ---------- galeria ---------- */
+  .ul-gallery {
+    aspect-ratio: 4 / 3;
+  }
+
+  .ul-gallery__arrow {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ul-gallery__arrow--prev {
+    left: 0.625rem;
+  }
+
+  .ul-gallery__arrow--next {
+    right: 0.625rem;
+  }
+
+  /* ---------- divulgar horta ---------- */
+  .ul-share__row {
+    flex-direction: column;
+  }
+
+  .ul-share__copy {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* ---------- produtos da horta ---------- */
+  .ul-horta-products__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .ul-horta-card {
+    max-width: none;
+  }
+
+  .ul-horta-card__body {
+    padding: 0.875rem;
+  }
+
+  /* ---------- modal ---------- */
+  .ul-producer-modal {
+    width: calc(100vw - 1.5rem);
+    max-height: 88vh;
+  }
+
+  .ul-producer-modal__body {
+    padding: 1.125rem;
+  }
+
+  /* ---------- conta ---------- */
+  .ul-conta__nav {
+    gap: 0.375rem;
+  }
+
+  .ul-conta__signout {
+    /* Em uma linha própria, para não espremer as abas. */
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .ul-conta__signout button {
+    padding-left: 0;
+  }
+
+  .ul-order__thumb {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* ---------- popover de conta ---------- */
+  /*
+    Ancorado à direita, ele saía da tela em celular. Aqui vira uma faixa
+    com margem dos dois lados.
+  */
+  .ul-account__popover {
+    position: fixed;
+    top: auto;
+    left: 0.75rem;
+    right: 0.75rem;
+    min-width: 0;
+  }
+}
+
+/* ---------- telas bem estreitas ---------- */
+@media (max-width: 400px) {
+  .ul-baskets__letter {
+    font-size: 0.875rem;
+  }
+
+  .ul-horta-products__grid {
+    grid-template-columns: 1fr;
+  }
+}

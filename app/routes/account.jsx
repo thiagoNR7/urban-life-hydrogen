@@ -39,57 +39,48 @@ export async function loader({context}) {
 export default function AccountLayout() {
   /** @type {LoaderReturnData} */
   const {customer} = useLoaderData();
-
-  const heading = customer
-    ? customer.firstName
-      ? `Welcome, ${customer.firstName}`
-      : `Welcome to your account.`
-    : 'Account Details';
+  const email = customer.emailAddress?.emailAddress;
 
   return (
-    <div className="account">
-      <h1>{heading}</h1>
-      <br />
-      <AccountMenu />
-      <br />
-      <br />
-      <Outlet context={{customer}} />
-    </div>
+    <section className="ul-conta">
+      <div className="ul-container">
+        <div className="ul-conta__header">
+          <span className="ul-eyebrow">Minha conta</span>
+          <h1 className="ul-conta__greeting">
+            {customer.firstName ? `Olá, ${customer.firstName}` : 'Olá'}
+          </h1>
+          {email && <p className="ul-conta__email">{email}</p>}
+        </div>
+
+        <AccountNav />
+
+        <Outlet context={{customer}} />
+      </div>
+    </section>
   );
 }
 
-function AccountMenu() {
-  function isActiveStyle({isActive, isPending}) {
-    return {
-      fontWeight: isActive ? 'bold' : undefined,
-      color: isPending ? 'grey' : 'black',
-    };
-  }
-
+function AccountNav() {
   return (
-    <nav role="navigation">
-      <NavLink to="/account/orders" style={isActiveStyle}>
-        Orders &nbsp;
+    <nav className="ul-conta__nav" aria-label="Navegação da conta">
+      <NavLink to="/account/orders" className="ul-conta__tab">
+        Pedidos
       </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/profile" style={isActiveStyle}>
-        &nbsp; Profile &nbsp;
+      <NavLink to="/account/profile" className="ul-conta__tab">
+        Perfil
       </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/addresses" style={isActiveStyle}>
-        &nbsp; Addresses &nbsp;
+      <NavLink to="/account/addresses" className="ul-conta__tab">
+        Endereços
       </NavLink>
-      &nbsp;|&nbsp;
-      <Logout />
+
+      <Form
+        className="ul-conta__signout"
+        method="POST"
+        action="/account/logout"
+      >
+        <button type="submit">Sair</button>
+      </Form>
     </nav>
-  );
-}
-
-function Logout() {
-  return (
-    <Form className="account-logout" method="POST" action="/account/logout">
-      &nbsp;<button type="submit">Sign out</button>
-    </Form>
   );
 }
 

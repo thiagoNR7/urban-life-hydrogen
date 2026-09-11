@@ -1,4 +1,5 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {ShopifyProvider} from '@shopify/hydrogen-react';
 import {
   Outlet,
   useRouteError,
@@ -25,6 +26,8 @@ import ulApp from '~/styles/ul-app.css?url';
 import ulUpdates from '~/styles/ul-updates.css?url';
 import ulProdutores from '~/styles/ul-produtores.css?url';
 import ulProdutorDetalhe from '~/styles/ul-produtor-detalhe.css?url';
+import ulConta from '~/styles/ul-conta.css?url';
+import ulMobile from '~/styles/ul-mobile.css?url';
 
 import {PageLayout} from './components/PageLayout';
 
@@ -174,6 +177,8 @@ export function Layout({children}) {
         <link rel="stylesheet" href={ulUpdates}></link>
         <link rel="stylesheet" href={ulProdutores}></link>
         <link rel="stylesheet" href={ulProdutorDetalhe}></link>
+        <link rel="stylesheet" href={ulConta}></link>
+        <link rel="stylesheet" href={ulMobile}></link>
         <Meta />
         <Links />
       </head>
@@ -195,15 +200,26 @@ export default function App() {
   }
 
   return (
-    <Analytics.Provider
-      cart={data.cart}
-      shop={data.shop}
-      consent={data.consent}
+    // <Money> (useMoney) lê locale daqui, não do i18n do contexto do
+    // storefront — sem isso ele cai no default en-US do hydrogen-react e
+    // formata preço como "R$3.00" em vez de "R$ 3,00".
+    <ShopifyProvider
+      storeDomain={data.publicStoreDomain}
+      storefrontToken={data.consent.storefrontAccessToken}
+      storefrontApiVersion="2026-04"
+      countryIsoCode="BR"
+      languageIsoCode="PT"
     >
-      <PageLayout {...data}>
-        <Outlet />
-      </PageLayout>
-    </Analytics.Provider>
+      <Analytics.Provider
+        cart={data.cart}
+        shop={data.shop}
+        consent={data.consent}
+      >
+        <PageLayout {...data}>
+          <Outlet />
+        </PageLayout>
+      </Analytics.Provider>
+    </ShopifyProvider>
   );
 }
 

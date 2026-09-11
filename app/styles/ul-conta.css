@@ -1,0 +1,330 @@
+/*
+  Urban Life — área da conta
+
+  Princípios desta tela, pensando num público de 20 a 60 anos:
+
+  - Nada abaixo de 15px. O corpo é 16px.
+  - Alvos de toque com 44px de altura mínima, inclusive os links da navegação.
+  - Status em palavra ("Pago", "A caminho"), nunca só em cor — daltonismo é
+    comum e cor sozinha não informa.
+  - Uma coluna só. Nada de tabela: em celular tabela quebra ou exige rolagem
+    lateral, que é onde a pessoa se perde.
+  - Sem ícone sem rótulo. Ícone acompanha texto, nunca substitui.
+
+  Carregar depois de ul-updates.css.
+*/
+
+.ul-conta {
+  background: var(--ul-color-background);
+  padding-block: 2.5rem 4rem;
+  min-height: 60vh;
+}
+
+/* ---------- cabeçalho ---------- */
+.ul-conta__header {
+  margin-bottom: 2rem;
+}
+
+.ul-conta__greeting {
+  margin: 0.5rem 0 0.375rem;
+  font-family: var(--ul-font-family);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: var(--ul-font-weight-bold);
+  line-height: 1.15;
+  color: var(--ul-color-foreground);
+}
+
+.ul-conta__email {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ul-color-muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- navegação ---------- */
+.ul-conta__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--ul-color-border);
+}
+
+.ul-conta__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.125rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-medium);
+  text-decoration: none;
+  transition: background-color var(--ul-transition-fast),
+    border-color var(--ul-transition-fast);
+}
+
+.ul-conta__tab:hover {
+  background: var(--ul-color-secondary);
+  text-decoration: none;
+}
+
+.ul-conta__tab[aria-current='page'] {
+  border-color: var(--ul-color-primary);
+  background: var(--ul-color-primary);
+  color: var(--ul-color-white);
+}
+
+.ul-conta__tab:focus-visible {
+  outline: 2px solid var(--ul-color-primary);
+  outline-offset: 2px;
+}
+
+/* Sair fica à direita e discreto: é ação destrutiva, não convite. */
+.ul-conta__signout {
+  margin-left: auto;
+}
+
+.ul-conta__signout button {
+  min-height: 44px;
+  padding: 0 1rem;
+  border: none;
+  background: none;
+  color: var(--ul-color-muted-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ul-conta__signout button:hover {
+  color: var(--ul-color-foreground);
+}
+
+/* ---------- lista de pedidos ---------- */
+.ul-conta__orders {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ul-order {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-white);
+}
+
+@media (min-width: 640px) {
+  .ul-order {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+.ul-order__thumbs {
+  display: flex;
+  gap: -0.5rem;
+}
+
+.ul-order__thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-secondary);
+}
+
+.ul-order__thumb + .ul-order__thumb {
+  margin-left: -12px;
+  box-shadow: -2px 0 0 var(--ul-color-white);
+}
+
+.ul-order__body {
+  min-width: 0;
+}
+
+.ul-order__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.25rem;
+}
+
+.ul-order__number {
+  font-family: var(--ul-font-family);
+  font-size: 1.0625rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+/*
+  Status sempre com a palavra. A cor é reforço, não a informação.
+*/
+.ul-order__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--ul-radius-pill);
+  background: var(--ul-color-secondary);
+  color: var(--ul-color-secondary-foreground);
+  font-size: 0.8125rem;
+  font-weight: var(--ul-font-weight-semibold);
+}
+
+.ul-order__status--paid,
+.ul-order__status--fulfilled {
+  background: rgb(var(--ul-color-primary-rgb) / 0.12);
+  color: var(--ul-color-primary);
+}
+
+.ul-order__meta {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ul-color-muted-foreground);
+}
+
+.ul-order__total {
+  font-family: var(--ul-font-family);
+  font-size: 1.125rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+  white-space: nowrap;
+}
+
+.ul-order__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+  .ul-order__actions {
+    align-items: flex-end;
+  }
+}
+
+.ul-order__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  color: var(--ul-color-primary);
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-semibold);
+  text-decoration: none;
+}
+
+.ul-order__link:hover {
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+/* ---------- estado vazio ---------- */
+.ul-conta__empty {
+  padding: 3rem 1.5rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-white);
+  text-align: center;
+}
+
+.ul-conta__empty-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.25rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-conta__empty-copy {
+  max-width: 28rem;
+  margin: 0 auto 1.75rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ul-color-muted-foreground);
+}
+
+/* ---------- formulários (perfil e endereços) ---------- */
+.ul-conta__card {
+  padding: 1.5rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-card);
+  background: var(--ul-color-white);
+}
+
+.ul-conta__card + .ul-conta__card {
+  margin-top: 1rem;
+}
+
+.ul-conta__card-title {
+  margin: 0 0 1.25rem;
+  font-family: var(--ul-font-family);
+  font-size: 1.125rem;
+  font-weight: var(--ul-font-weight-bold);
+  color: var(--ul-color-foreground);
+}
+
+.ul-conta__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.ul-conta__field label {
+  font-size: 0.9375rem;
+  font-weight: var(--ul-font-weight-medium);
+  color: var(--ul-color-foreground);
+}
+
+/*
+  16px no input não é estética: abaixo disso o Safari no iPhone dá zoom
+  automático ao focar o campo, e a pessoa perde o contexto da tela.
+*/
+.ul-conta__field input,
+.ul-conta__field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 1rem;
+  border: 1px solid var(--ul-color-border);
+  border-radius: var(--ul-radius-base);
+  background: var(--ul-color-background);
+  color: var(--ul-color-foreground);
+  font-family: var(--ul-font-family);
+  font-size: 1rem;
+}
+
+.ul-conta__field input:focus-visible,
+.ul-conta__field select:focus-visible {
+  outline: 2px solid var(--ul-color-primary);
+  outline-offset: 1px;
+}
+
+.ul-conta__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.ul-conta__error {
+  margin: 0.375rem 0 0;
+  font-size: 0.875rem;
+  color: #B3261E;
+}

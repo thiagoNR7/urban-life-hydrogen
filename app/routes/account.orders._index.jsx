@@ -1,10 +1,4 @@
-import {
-  Link,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from 'react-router';
-import {useRef} from 'react';
+import {Link, useLoaderData} from 'react-router';
 import {
   Money,
   getPaginationVariables,
@@ -13,16 +7,16 @@ import {
 import {
   buildOrderSearchQuery,
   parseOrderFilters,
-  ORDER_FILTER_FIELDS,
 } from '~/lib/orderFilters';
 import {CUSTOMER_ORDERS_QUERY} from '~/graphql/customer-account/CustomerOrdersQuery';
+import {UlIcon} from '~/components/UlIcon';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Orders'}];
+  return [{title: 'Pedidos | Urban Life'}];
 };
 
 /**
@@ -57,34 +51,20 @@ export default function Orders() {
   /** @type {LoaderReturnData} */
   const {customer, filters} = useLoaderData();
   const {orders} = customer;
-
-  return (
-    <div className="orders">
-      <OrderSearchForm currentFilters={filters} />
-      <OrdersTable orders={orders} filters={filters} />
-    </div>
-  );
-}
-
-/**
- * @param {{
- *   orders: CustomerOrdersFragment['orders'];
- *   filters: OrderFilterParams;
- * }}
- */
-function OrdersTable({orders, filters}) {
   const hasFilters = !!(filters.name || filters.confirmationNumber);
 
+  if (!orders?.nodes.length) {
+    return <EmptyOrders hasFilters={hasFilters} />;
+  }
+
   return (
-    <div className="acccount-orders" aria-live="polite">
-      {orders?.nodes.length ? (
-        <PaginatedResourceSection connection={orders}>
-          {({node: order}) => <OrderItem key={order.id} order={order} />}
-        </PaginatedResourceSection>
-      ) : (
-        <EmptyOrders hasFilters={hasFilters} />
-      )}
-    </div>
+    <PaginatedResourceSection
+      connection={orders}
+      resourcesClassName="ul-conta__orders"
+      ariaLabel="Seus pedidos"
+    >
+      {({node: order}) => <OrderItem key={order.id} order={order} />}
+    </PaginatedResourceSection>
   );
 }
 
@@ -93,22 +73,31 @@ function OrdersTable({orders, filters}) {
  */
 function EmptyOrders({hasFilters = false}) {
   return (
-    <div>
+    <div className="ul-conta__empty">
       {hasFilters ? (
         <>
-          <p>No orders found matching your search.</p>
-          <br />
-          <p>
-            <Link to="/account/orders">Clear filters →</Link>
+          <h2 className="ul-conta__empty-title">
+            Nenhum pedido encontrado
+          </h2>
+          <p className="ul-conta__empty-copy">
+            Não achamos pedidos com esse filtro.
           </p>
+          <Link to="/account/orders" className="ul-btn ul-btn--solid ul-btn--lg">
+            Limpar filtro
+          </Link>
         </>
       ) : (
         <>
-          <p>You haven&apos;t placed any orders yet.</p>
-          <br />
-          <p>
-            <Link to="/collections">Start Shopping →</Link>
+          <h2 className="ul-conta__empty-title">
+            Você ainda não fez nenhum pedido
+          </h2>
+          <p className="ul-conta__empty-copy">
+            Escolha uma cesta da seleção da semana e acompanhe seu pedido por
+            aqui.
           </p>
+          <Link to="/collections/all" className="ul-btn ul-btn--solid ul-btn--lg">
+            Ver seleção da semana
+          </Link>
         </>
       )}
     </div>
@@ -116,87 +105,29 @@ function EmptyOrders({hasFilters = false}) {
 }
 
 /**
- * @param {{
- *   currentFilters: OrderFilterParams;
- * }}
+ * Resume o status financeiro e de entrega do pedido numa palavra só, no
+ * vocabulário da tela ("Pago", "Preparando", "A caminho", "Entregue") — o
+ * pedido tem os dois campos, mas o cartão mostra um selo só.
+ * @param {{financialStatus: string | null; fulfillmentStatus: string | null | undefined}}
  */
-function OrderSearchForm({currentFilters}) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigation = useNavigation();
-  const isSearching =
-    navigation.state !== 'idle' &&
-    navigation.location?.pathname?.includes('orders');
-  const formRef = useRef(null);
+function getOrderStatus({financialStatus, fulfillmentStatus}) {
+  if (fulfillmentStatus === 'FULFILLED' || fulfillmentStatus === 'SUCCESS') {
+    return {label: 'Entregue', modifier: 'fulfilled'};
+  }
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const params = new URLSearchParams();
+  if (
+    fulfillmentStatus === 'IN_PROGRESS' ||
+    fulfillmentStatus === 'OPEN' ||
+    fulfillmentStatus === 'PARTIALLY_FULFILLED'
+  ) {
+    return {label: 'A caminho', modifier: null};
+  }
 
-    const name = formData.get(ORDER_FILTER_FIELDS.NAME)?.toString().trim();
-    const confirmationNumber = formData
-      .get(ORDER_FILTER_FIELDS.CONFIRMATION_NUMBER)
-      ?.toString()
-      .trim();
+  if (financialStatus === 'PAID') {
+    return {label: 'Pago', modifier: 'paid'};
+  }
 
-    if (name) params.set(ORDER_FILTER_FIELDS.NAME, name);
-    if (confirmationNumber)
-      params.set(ORDER_FILTER_FIELDS.CONFIRMATION_NUMBER, confirmationNumber);
-
-    setSearchParams(params);
-  };
-
-  const hasFilters = currentFilters.name || currentFilters.confirmationNumber;
-
-  return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      className="order-search-form"
-      aria-label="Search orders"
-    >
-      <fieldset className="order-search-fieldset">
-        <legend className="order-search-legend">Filter Orders</legend>
-
-        <div className="order-search-inputs">
-          <input
-            type="search"
-            name={ORDER_FILTER_FIELDS.NAME}
-            placeholder="Order #"
-            aria-label="Order number"
-            defaultValue={currentFilters.name || ''}
-            className="order-search-input"
-          />
-          <input
-            type="search"
-            name={ORDER_FILTER_FIELDS.CONFIRMATION_NUMBER}
-            placeholder="Confirmation #"
-            aria-label="Confirmation number"
-            defaultValue={currentFilters.confirmationNumber || ''}
-            className="order-search-input"
-          />
-        </div>
-
-        <div className="order-search-buttons">
-          <button type="submit" disabled={isSearching}>
-            {isSearching ? 'Searching' : 'Search'}
-          </button>
-          {hasFilters && (
-            <button
-              type="button"
-              disabled={isSearching}
-              onClick={() => {
-                setSearchParams(new URLSearchParams());
-                formRef.current?.reset();
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </fieldset>
-    </form>
-  );
+  return {label: 'Preparando', modifier: null};
 }
 
 /**
@@ -204,23 +135,63 @@ function OrderSearchForm({currentFilters}) {
  */
 function OrderItem({order}) {
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
+  const status = getOrderStatus({
+    financialStatus: order.financialStatus,
+    fulfillmentStatus,
+  });
+  const orderUrl = `/account/orders/${btoa(order.id)}`;
+  // O fragmento de pedido ainda não traz itens/imagens (ORDER_ITEM_FRAGMENT
+  // em CustomerOrdersQuery.js) — as miniaturas aparecem assim que isso for
+  // adicionado lá, sem precisar mexer aqui.
+  const thumbs = order.lineItems?.nodes ?? [];
+
   return (
-    <>
-      <fieldset>
-        <Link to={`/account/orders/${btoa(order.id)}`}>
-          <strong>#{order.number}</strong>
+    <article className="ul-order">
+      {thumbs.length > 0 && (
+        <div className="ul-order__thumbs">
+          {thumbs.slice(0, 3).map((item, index) => (
+            <img
+              key={item.id ?? index}
+              className="ul-order__thumb"
+              src={item.image?.url}
+              alt=""
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="ul-order__body">
+        <div className="ul-order__top">
+          <span className="ul-order__number">Pedido #{order.number}</span>
+          <span
+            className={`ul-order__status${
+              status.modifier ? ` ul-order__status--${status.modifier}` : ''
+            }`}
+          >
+            {status.label}
+          </span>
+        </div>
+
+        <p className="ul-order__meta">
+          {new Date(order.processedAt).toLocaleDateString('pt-BR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}
+          {order.confirmationNumber && ` · Confirmação ${order.confirmationNumber}`}
+        </p>
+      </div>
+
+      <div className="ul-order__actions">
+        <span className="ul-order__total">
+          <Money data={order.totalPrice} />
+        </span>
+        <Link to={orderUrl} className="ul-order__link">
+          Ver pedido
+          <UlIcon name="arrow-right" size={16} />
         </Link>
-        <p>{new Date(order.processedAt).toDateString()}</p>
-        {order.confirmationNumber && (
-          <p>Confirmation: {order.confirmationNumber}</p>
-        )}
-        <p>{order.financialStatus}</p>
-        {fulfillmentStatus && <p>{fulfillmentStatus}</p>}
-        <Money data={order.totalPrice} />
-        <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
-      </fieldset>
-      <br />
-    </>
+      </div>
+    </article>
   );
 }
 

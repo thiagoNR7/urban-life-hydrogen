@@ -15,7 +15,7 @@ import {
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Addresses'}];
+  return [{title: 'Endereços | Urban Life'}];
 };
 
 /**
@@ -254,27 +254,19 @@ export default function Addresses() {
   const {defaultAddress, addresses} = customer;
 
   return (
-    <div className="account-addresses">
-      <h2>Addresses</h2>
-      <br />
-      <div>
-        <div>
-          <legend>Create address</legend>
-          <NewAddressForm key={addresses.nodes.length} />
-        </div>
-        <br />
-        <hr />
-        <br />
-        {!addresses.nodes.length ? (
-          <p>You have no addresses saved.</p>
-        ) : (
-          <ExistingAddresses
-            addresses={addresses}
-            defaultAddress={defaultAddress}
-          />
-        )}
+    <>
+      <div className="ul-conta__card">
+        <h2 className="ul-conta__card-title">Novo endereço</h2>
+        <NewAddressForm key={addresses.nodes.length} />
       </div>
-    </div>
+
+      {addresses.nodes.length > 0 && (
+        <ExistingAddresses
+          addresses={addresses}
+          defaultAddress={defaultAddress}
+        />
+      )}
+    </>
   );
 }
 
@@ -300,15 +292,14 @@ function NewAddressForm() {
       defaultAddress={null}
     >
       {({stateForMethod}) => (
-        <div>
-          <button
-            disabled={stateForMethod('POST') !== 'idle'}
-            formMethod="POST"
-            type="submit"
-          >
-            {stateForMethod('POST') !== 'idle' ? 'Creating' : 'Create'}
-          </button>
-        </div>
+        <button
+          className="ul-btn ul-btn--solid"
+          disabled={stateForMethod('POST') !== 'idle'}
+          formMethod="POST"
+          type="submit"
+        >
+          {stateForMethod('POST') !== 'idle' ? 'Criando' : 'Criar endereço'}
+        </button>
       )}
     </AddressForm>
   );
@@ -319,36 +310,46 @@ function NewAddressForm() {
  */
 function ExistingAddresses({addresses, defaultAddress}) {
   return (
-    <div>
-      <legend>Existing addresses</legend>
-      {addresses.nodes.map((address) => (
-        <AddressForm
-          key={address.id}
-          addressId={address.id}
-          address={address}
-          defaultAddress={defaultAddress}
-        >
-          {({stateForMethod}) => (
-            <div>
-              <button
-                disabled={stateForMethod('PUT') !== 'idle'}
-                formMethod="PUT"
-                type="submit"
-              >
-                {stateForMethod('PUT') !== 'idle' ? 'Saving' : 'Save'}
-              </button>
-              <button
-                disabled={stateForMethod('DELETE') !== 'idle'}
-                formMethod="DELETE"
-                type="submit"
-              >
-                {stateForMethod('DELETE') !== 'idle' ? 'Deleting' : 'Delete'}
-              </button>
-            </div>
-          )}
-        </AddressForm>
-      ))}
-    </div>
+    <>
+      {addresses.nodes.map((address) => {
+        const isDefaultAddress = defaultAddress?.id === address.id;
+        return (
+          <div className="ul-conta__card" key={address.id}>
+            <h2 className="ul-conta__card-title">
+              Endereço{isDefaultAddress ? ' · padrão' : ''}
+            </h2>
+            <AddressForm
+              addressId={address.id}
+              address={address}
+              defaultAddress={defaultAddress}
+            >
+              {({stateForMethod}) => (
+                <>
+                  <button
+                    className="ul-btn ul-btn--solid"
+                    disabled={stateForMethod('PUT') !== 'idle'}
+                    formMethod="PUT"
+                    type="submit"
+                  >
+                    {stateForMethod('PUT') !== 'idle' ? 'Salvando' : 'Salvar'}
+                  </button>
+                  <button
+                    className="ul-btn ul-btn--outline"
+                    disabled={stateForMethod('DELETE') !== 'idle'}
+                    formMethod="DELETE"
+                    type="submit"
+                  >
+                    {stateForMethod('DELETE') !== 'idle'
+                      ? 'Removendo'
+                      : 'Remover'}
+                  </button>
+                </>
+              )}
+            </AddressForm>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
@@ -370,139 +371,166 @@ export function AddressForm({addressId, address, defaultAddress, children}) {
   const isDefaultAddress = defaultAddress?.id === addressId;
   return (
     <Form id={addressId}>
-      <fieldset>
-        <input type="hidden" name="addressId" defaultValue={addressId} />
-        <label htmlFor="firstName">First name*</label>
+      <input type="hidden" name="addressId" defaultValue={addressId} />
+
+      <div className="ul-conta__field">
+        <label htmlFor="firstName">Nome*</label>
         <input
-          aria-label="First name"
+          aria-label="Nome"
           autoComplete="given-name"
           defaultValue={address?.firstName ?? ''}
           id="firstName"
           name="firstName"
-          placeholder="First name"
+          placeholder="Nome"
           required
           type="text"
         />
-        <label htmlFor="lastName">Last name*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="lastName">Sobrenome*</label>
         <input
-          aria-label="Last name"
+          aria-label="Sobrenome"
           autoComplete="family-name"
           defaultValue={address?.lastName ?? ''}
           id="lastName"
           name="lastName"
-          placeholder="Last name"
+          placeholder="Sobrenome"
           required
           type="text"
         />
-        <label htmlFor="company">Company</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="company">Empresa</label>
         <input
-          aria-label="Company"
+          aria-label="Empresa"
           autoComplete="organization"
           defaultValue={address?.company ?? ''}
           id="company"
           name="company"
-          placeholder="Company"
+          placeholder="Empresa"
           type="text"
         />
-        <label htmlFor="address1">Address line*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="address1">Endereço*</label>
         <input
-          aria-label="Address line 1"
+          aria-label="Endereço"
           autoComplete="address-line1"
           defaultValue={address?.address1 ?? ''}
           id="address1"
           name="address1"
-          placeholder="Address line 1*"
+          placeholder="Rua, número"
           required
           type="text"
         />
-        <label htmlFor="address2">Address line 2</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="address2">Complemento</label>
         <input
-          aria-label="Address line 2"
+          aria-label="Complemento"
           autoComplete="address-line2"
           defaultValue={address?.address2 ?? ''}
           id="address2"
           name="address2"
-          placeholder="Address line 2"
+          placeholder="Apto, bloco, referência"
           type="text"
         />
-        <label htmlFor="city">City*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="city">Cidade*</label>
         <input
-          aria-label="City"
+          aria-label="Cidade"
           autoComplete="address-level2"
           defaultValue={address?.city ?? ''}
           id="city"
           name="city"
-          placeholder="City"
+          placeholder="Cidade"
           required
           type="text"
         />
-        <label htmlFor="zoneCode">State / Province*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="zoneCode">Estado*</label>
         <input
-          aria-label="State/Province"
+          aria-label="Estado"
           autoComplete="address-level1"
           defaultValue={address?.zoneCode ?? ''}
           id="zoneCode"
           name="zoneCode"
-          placeholder="State / Province"
+          placeholder="Estado"
           required
           type="text"
         />
-        <label htmlFor="zip">Zip / Postal Code*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="zip">CEP*</label>
         <input
-          aria-label="Zip"
+          aria-label="CEP"
           autoComplete="postal-code"
           defaultValue={address?.zip ?? ''}
           id="zip"
           name="zip"
-          placeholder="Zip / Postal Code"
+          placeholder="CEP"
           required
           type="text"
         />
-        <label htmlFor="territoryCode">Country Code*</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="territoryCode">Código do país*</label>
         <input
-          aria-label="Country code"
+          aria-label="Código do país"
           autoComplete="country"
           defaultValue={address?.territoryCode ?? ''}
           id="territoryCode"
           name="territoryCode"
-          placeholder="Country"
+          placeholder="BR"
           required
           type="text"
           maxLength={2}
         />
-        <label htmlFor="phoneNumber">Phone</label>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="phoneNumber">Telefone</label>
         <input
-          aria-label="Phone Number"
+          aria-label="Telefone"
           autoComplete="tel"
           defaultValue={address?.phoneNumber ?? ''}
           id="phoneNumber"
           name="phoneNumber"
-          placeholder="+16135551111"
+          placeholder="+5511999999999"
           pattern="^\+?[1-9]\d{3,14}$"
           type="tel"
         />
-        <div>
+      </div>
+
+      <div className="ul-conta__field">
+        <label htmlFor="defaultAddress">
           <input
             defaultChecked={isDefaultAddress}
             id="defaultAddress"
             name="defaultAddress"
             type="checkbox"
-          />
-          <label htmlFor="defaultAddress">Set as default address</label>
-        </div>
-        {error ? (
-          <p>
-            <mark>
-              <small>{error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
+          />{' '}
+          Definir como endereço padrão
+        </label>
+      </div>
+
+      {error && <p className="ul-conta__error">{error}</p>}
+
+      <div className="ul-conta__form-actions">
         {children({
           stateForMethod: (method) => (formMethod === method ? state : 'idle'),
         })}
-      </fieldset>
+      </div>
     </Form>
   );
 }
