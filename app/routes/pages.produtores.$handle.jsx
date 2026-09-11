@@ -9,6 +9,8 @@ import {UlHortaProductCard} from '~/components/UlHortaProductCard';
 import {
   BASKET_ITEM_METAFIELDS,
   BASKET_PRODUCT_HANDLE,
+  ITEM_FIELDS,
+  ITEM_METAOBJECT_TYPE,
   BASKET_SIZES,
   PRODUCER_FIELDS,
   PRODUCER_METAOBJECT_TYPE,
@@ -42,7 +44,7 @@ export async function loader({params, context, request}) {
 
   const producer = toProducer(metaobject);
 
-  const [{products}, {product: basketProduct}] = await Promise.all([
+  const [{products}, {product: basketProduct}, itemsData] = await Promise.all([
     storefront.query(HORTA_PRODUCTS_QUERY, {
       variables: {
         first: 100,
@@ -59,9 +61,18 @@ export async function loader({params, context, request}) {
       // Cache curto: a composição da cesta muda toda semana.
       cache: storefront.CacheShort(),
     }),
+    storefront.query(ITEMS_QUERY, {
+      variables: {type: ITEM_METAOBJECT_TYPE, first: 100},
+      cache: storefront.CacheShort(),
+    }).catch(() => ({metaobjects: null})),
   ]);
 
-  const baskets = toBaskets(basketProduct);
+  /**
+   * Catálogo da horta. Se o metaobject ainda não existir, a lista vem vazia
+   * e a troca fica indisponível — mas a página continua funcionando.
+   */
+  const catalog = (itemsData?.metaobjects?.nodes ?? []).map(toItem);
+  const baskets = toBaskets(basketProduct, catalog);
 
   /**
    * Ficam os produtos cujo metacampo `custom.produtor` aponta para este
@@ -80,6 +91,7 @@ export async function loader({params, context, request}) {
 
   return {
     producer,
+    catalog,
     baskets,
     products: hortaProducts,
     shareUrl: new URL(request.url).href,
@@ -157,10 +169,46 @@ function toProducer(node) {
  * parêntese e a letra é o que está dentro. Ler daí, em vez de manter uma
  * lista fixa, faz um tamanho novo criado no Shopify aparecer sozinho.
  */
-function toBaskets(product) {
-  const variants = product?.variants?.nodes ?? [];
+/** Converte um metaobject item_horta no formato que a página usa. */
+function toItem(node) {
+  const byKey = new Map((node.fields ?? []).map((f) => [f.key, f]));
 
-  // Chave do metacampo -> letra do tamanho, para casar um com o outro.
+  const pick = (keys) => {
+    for (const key of keys) {
+      const value = byKey.get(key)?.value;
+      if (value) return value;
+    }
+    return '';
+  };
+
+  const available = pick(ITEM_FIELDS.available);
+
+  return {
+    id: node.id,
+    name: pick(ITEM_FIELDS.name),
+    unit: pick(ITEM_FIELDS.unit),
+    group: pick(ITEM_FIELDS.group),
+    price: Number.parseFloat(pick(ITEM_FIELDS.price)) || 0,
+    // Booleano do Shopify chega como string.
+    available: available === 'true' || available === '1',
+    image:
+      ITEM_FIELDS.image
+        .map((key) => byKey.get(key)?.reference?.image)
+        .find(Boolean) ?? null,
+  };
+}
+
+/**
+ * Converte as variantes do produto de cesta nos tamanhos do seletor.
+ *
+ * O título da variante vem como "Pequena (P)": o nome é o que está antes do
+ * parêntese e a letra é o que está dentro. Ler daí, em vez de manter uma
+ * lista fixa, faz um tamanho novo criado no Shopify aparecer sozinho.
+ */
+function toBaskets(product, catalog) {
+  const variants = product?.variants?.nodes ?? [];
+  const byName = new Map(catalog.map((item) => [normalize(item.name), item]));
+
   const keyToLetter = new Map(
     Object.entries(BASKET_ITEM_METAFIELDS).map(([letter, {key}]) => [
       key,
@@ -169,27 +217,42 @@ function toBaskets(product) {
   );
 
   /**
-   * Metacampo do tipo lista chega como JSON em string. O catch trata o caso
-   * de alguém trocar o tipo para texto simples no admin: aí divide pelos
-   * separadores usuais em vez de quebrar a página.
+   * Os metacampos da cesta aceitam dois formatos, de propósito:
+   *
+   *   referências a metaobject → o caminho certo, traz grupo e preço juntos
+   *   lista de texto           → formato antigo, casado pelo nome no catálogo
+   *
+   * Manter os dois permite migrar os metacampos sem que a página quebre no
+   * meio do caminho. Quando a migração terminar, o ramo do texto pode sair.
    */
   const itemsByLetter = {};
   for (const field of product?.metafields ?? []) {
-    if (!field?.value) continue;
+    if (!field) continue;
     const letter = keyToLetter.get(field.key);
     if (!letter) continue;
 
-    try {
-      const parsed = JSON.parse(field.value);
-      itemsByLetter[letter] = Array.isArray(parsed)
-        ? parsed.map((s) => String(s).trim()).filter(Boolean)
-        : [String(parsed).trim()];
-    } catch {
-      itemsByLetter[letter] = field.value
-        .split(/[•|\n,]/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+    const referenced = field.references?.nodes ?? [];
+    if (referenced.length > 0) {
+      itemsByLetter[letter] = referenced.map(toItem);
+      continue;
     }
+
+    itemsByLetter[letter] = parseTextList(field.value).map((raw) => {
+      // "Couve - 1 maço" -> nome "Couve", unidade "1 maço"
+      const [namePart, ...unitParts] = raw.split(/\s+-\s+/);
+      const name = namePart.trim();
+      const known = byName.get(normalize(name));
+
+      return {
+        id: known?.id ?? `texto:${name}`,
+        name,
+        unit: unitParts.join(' - ').trim() || known?.unit || '',
+        group: known?.group ?? '',
+        price: known?.price ?? 0,
+        available: known?.available ?? true,
+        image: known?.image ?? null,
+      };
+    });
   }
 
   return variants
@@ -197,7 +260,7 @@ function toBaskets(product) {
       const match = variant.title.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
       const name = (match ? match[1] : variant.title).trim();
       const letter = (match ? match[2] : variant.title.charAt(0)).trim();
-      const meta = BASKET_SIZES[letter] ?? {order: 99};
+      const meta = BASKET_SIZES[letter] ?? {order: 99, swaps: 0};
       const items = itemsByLetter[letter] ?? [];
 
       return {
@@ -206,8 +269,9 @@ function toBaskets(product) {
         letter,
         name,
         order: meta.order,
+        maxSwaps: meta.swaps,
         // A contagem é o tamanho da lista, não um número à parte: assim
-        // "Contém 9 itens" nunca discorda dos itens listados logo abaixo.
+        // "Contém 11 itens" nunca discorda dos itens listados abaixo.
         itemCount: items.length || null,
         items,
         price: variant.price,
@@ -217,8 +281,28 @@ function toBaskets(product) {
     .sort((a, b) => a.order - b.order);
 }
 
+function parseTextList(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+  } catch {
+    return raw.split(/[\u2022|\n]/);
+  }
+}
+
+/** Casa nomes ignorando caixa, acento e espaço sobrando. */
+function normalize(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function ProducerDetail() {
-  const {producer, baskets: basketList, products, shareUrl} = useLoaderData();
+  const {producer, baskets: basketList, products, shareUrl, catalog} =
+    useLoaderData();
   const [selectedId, setSelectedId] = useState(basketList[0]?.id);
 
   const selected =
@@ -263,6 +347,7 @@ export default function ProducerDetail() {
             <UlBasketPicker
               baskets={basketList}
               selected={selected}
+              catalog={catalog}
               onSelect={setSelectedId}
             />
           )}
@@ -366,6 +451,22 @@ const BASKET_QUERY = `#graphql
       metafields(identifiers: $identifiers) {
         key
         value
+        references(first: 30) {
+          nodes {
+            ... on Metaobject {
+              id
+              fields {
+                key
+                value
+                reference {
+                  ... on MediaImage {
+                    image { url altText width height }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       variants(first: 10) {
         nodes {
@@ -373,6 +474,25 @@ const BASKET_QUERY = `#graphql
           title
           availableForSale
           price { amount currencyCode }
+        }
+      }
+    }
+  }
+`;
+
+const ITEMS_QUERY = `#graphql
+  query HortaItems($type: String!, $first: Int!) {
+    metaobjects(type: $type, first: $first) {
+      nodes {
+        id
+        fields {
+          key
+          value
+          reference {
+            ... on MediaImage {
+              image { url altText width height }
+            }
+          }
         }
       }
     }

@@ -50,6 +50,70 @@ export function producerUrl(handle) {
   return `/pages/produtores/${handle}`;
 }
 
+/**
+ * Itens da horta.
+ *
+ * Cada item é um metaobject com nome, unidade, grupo, preço e se está
+ * disponível na semana. É esse cadastro que alimenta tanto a composição da
+ * cesta quanto as opções de troca.
+ */
+export const ITEM_METAOBJECT_TYPE = 'item_horta';
+
+/**
+ * Chaves reais conferidas no admin. O Shopify gera a chave a partir do nome
+ * do campo, então "Preço Base" virou `preco_base` e "Disponivel esta Semana"
+ * virou `disponivel_esta_semana` — nomes mais longos do que eu esperava.
+ *
+ * A primeira entrada de cada lista é a real; as seguintes são tolerância,
+ * caso o campo seja renomeado no futuro.
+ */
+export const ITEM_FIELDS = {
+  name: ['nome', 'name'],
+  unit: ['unidade', 'unit'],
+  group: ['grupo', 'group', 'categoria'],
+  price: ['preco_base', 'preco', 'price'],
+  available: ['disponivel_esta_semana', 'disponivel', 'available'],
+  image: ['foto', 'imagem', 'image'],
+};
+
+/**
+ * Um item pode substituir outro quando: mesmo grupo, preço igual ou menor,
+ * e disponível na semana.
+ *
+ * A regra existe para não ser preciso manter uma lista de substitutos por
+ * item — com 41 itens isso viraria manutenção semanal. Aqui basta marcar o
+ * que a horta tem, e as opções saem sozinhas.
+ *
+ * Repetir item é permitido de propósito. Quem gosta de couve e não gosta de
+ * cenoura quer mesmo dois maços de couve, e bloquear isso é o site decidindo
+ * pelo cliente sem razão de operação por trás — continuam 7 itens, dois
+ * iguais.
+ *
+ * Tem um efeito colateral bom: sem esse bloqueio, os Legumes deixam de estar
+ * travados. Cenoura não tinha substituto porque as outras raízes e frutos já
+ * compunham as cestas; agora pode virar Beterraba, Batata-doce ou Tomate.
+ */
+export function canSubstitute(candidate, outgoing, basketItems) {
+  if (!candidate.available) return false;
+  if (candidate.group !== outgoing.group) return false;
+  if (candidate.price > outgoing.price) return false;
+  // O item que está saindo não pode ser escolhido como entrada.
+  return candidate.name !== outgoing.name;
+}
+
+/**
+ * Grupos de troca.
+ *
+ * Raízes e frutos viraram um grupo só, "Legumes". O motivo é concreto: a
+ * tabela de preços tem 3 raízes e 4 frutos, e todos os 7 já compõem alguma
+ * cesta — então separados, nenhum dos dois grupos tinha substituto possível.
+ *
+ * Juntos, Cenoura pode virar Tomate ou Abobrinha, e a cesta continua
+ * equilibrada. Abrir a troca entre quaisquer grupos resolveria também, mas
+ * deixaria o cliente trocar legume por folha, e a cesta viraria só verdura.
+ */
+export const ITEM_GROUPS = ['Folhas', 'Temperos e ervas', 'Legumes'];
+
 /** Texto da introdução, que ocupa a área acima dos filtros. */
 export const producersPage = {
   eyebrow: 'Rede de produtores',
@@ -93,10 +157,18 @@ export const BASKET_PRODUCT_HANDLE = 'cesta-semanal-de-hortalicas-teste';
  * A contagem de itens não está aqui de propósito: ela é o tamanho da lista
  * do metacampo. Assim "Contém 9 itens" nunca discorda dos itens mostrados.
  */
+/**
+ * Uma troca em todos os tamanhos.
+ *
+ * Escalonar (1/2/3) parecia mais generoso, mas cada troca extra é um caso a
+ * conferir na separação. Numa operação de cesta semanal, previsibilidade na
+ * montagem vale mais do que flexibilidade marginal — e uma troca já atende
+ * o cliente que não gosta de um item.
+ */
 export const BASKET_SIZES = {
-  P: {order: 1},
-  M: {order: 2},
-  G: {order: 3},
+  P: {order: 1, swaps: 1},
+  M: {order: 2, swaps: 1},
+  G: {order: 3, swaps: 1},
 };
 
 /**
@@ -129,9 +201,6 @@ export const PRODUCT_PRODUCER_METAFIELD = {
   namespace: 'custom',
   key: 'produtor',
 };
-
-/** Quantas trocas o cliente pode fazer numa cesta. */
-export const SWAPS_ALLOWED = 1;
 
 /** Rótulos da página de detalhe do produtor. */
 export const producerDetailUi = {
