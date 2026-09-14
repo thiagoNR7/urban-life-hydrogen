@@ -741,7 +741,28 @@ export type BasketQuery = {
   product?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Product, 'handle' | 'title'> & {
       metafields: Array<
-        StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'key' | 'value'>>
+        StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metafield, 'key' | 'value'> & {
+            references?: StorefrontAPI.Maybe<{
+              nodes: Array<
+                Pick<StorefrontAPI.Metaobject, 'id'> & {
+                  fields: Array<
+                    Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+                      reference?: StorefrontAPI.Maybe<{
+                        image?: StorefrontAPI.Maybe<
+                          Pick<
+                            StorefrontAPI.Image,
+                            'url' | 'altText' | 'width' | 'height'
+                          >
+                        >;
+                      }>;
+                    }
+                  >;
+                }
+              >;
+            }>;
+          }
+        >
       >;
       variants: {
         nodes: Array<
@@ -753,6 +774,32 @@ export type BasketQuery = {
       };
     }
   >;
+};
+
+export type HortaItemsQueryVariables = StorefrontAPI.Exact<{
+  type: StorefrontAPI.Scalars['String']['input'];
+  first: StorefrontAPI.Scalars['Int']['input'];
+}>;
+
+export type HortaItemsQuery = {
+  metaobjects: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'id'> & {
+        fields: Array<
+          Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+            reference?: StorefrontAPI.Maybe<{
+              image?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'url' | 'altText' | 'width' | 'height'
+                >
+              >;
+            }>;
+          }
+        >;
+      }
+    >;
+  };
 };
 
 export type ProducersQueryVariables = StorefrontAPI.Exact<{
@@ -1160,9 +1207,13 @@ interface GeneratedQueryTypes {
     return: HortaProductsQuery;
     variables: HortaProductsQueryVariables;
   };
-  '#graphql\n  query Basket($handle: String!, $identifiers: [HasMetafieldsIdentifier!]!) {\n    product(handle: $handle) {\n      handle\n      title\n      metafields(identifiers: $identifiers) {\n        key\n        value\n      }\n      variants(first: 10) {\n        nodes {\n          id\n          title\n          availableForSale\n          price { amount currencyCode }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query Basket($handle: String!, $identifiers: [HasMetafieldsIdentifier!]!) {\n    product(handle: $handle) {\n      handle\n      title\n      metafields(identifiers: $identifiers) {\n        key\n        value\n        references(first: 30) {\n          nodes {\n            ... on Metaobject {\n              id\n              fields {\n                key\n                value\n                reference {\n                  ... on MediaImage {\n                    image { url altText width height }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n      variants(first: 10) {\n        nodes {\n          id\n          title\n          availableForSale\n          price { amount currencyCode }\n        }\n      }\n    }\n  }\n': {
     return: BasketQuery;
     variables: BasketQueryVariables;
+  };
+  '#graphql\n  query HortaItems($type: String!, $first: Int!) {\n    metaobjects(type: $type, first: $first) {\n      nodes {\n        id\n        fields {\n          key\n          value\n          reference {\n            ... on MediaImage {\n              image { url altText width height }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: HortaItemsQuery;
+    variables: HortaItemsQueryVariables;
   };
   '#graphql\n  query Producers($type: String!, $first: Int!) {\n    metaobjects(type: $type, first: $first) {\n      nodes {\n        id\n        handle\n        fields {\n          key\n          value\n          reference {\n            ... on MediaImage {\n              image {\n                url\n                altText\n                width\n                height\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: ProducersQuery;

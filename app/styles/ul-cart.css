@@ -1,0 +1,572 @@
+/* ==========================================================================
+   ul-cart.css — carrinho
+
+   Versao "gourmet": afasta-se do porte fiel do tema em producao por pedido
+   do dono. Se alguem for comparar com a loja Liquid, vai achar diferente de
+   proposito — nao e regressao.
+
+   O que guia o desenho: a cesta vem de uma horta com nome. A foto e o nome
+   do produtor tem peso; o resto e quieto.
+
+   Carregar depois de ul-conta.css e ANTES de ul-mobile.css.
+   ========================================================================== */
+
+.ul-cart {
+  /* Tinta verde-escura em vez de preto puro: casa com o cabecalho e tira a
+     dureza do texto sobre branco. */
+  --ul-cart-bg: #ffffff;
+  --ul-cart-text: #10261a;
+  --ul-cart-muted: #5b6b60;
+  --ul-cart-line: #e3e7e3;
+  --ul-cart-accent: var(--ul-color-green, #0c5d2c);
+  --ul-cart-panel: #f4f7f3;
+
+  background: var(--ul-cart-bg);
+  color: var(--ul-cart-text);
+  padding-block: 2.5rem 3.5rem;
+}
+
+.ul-cart-inner {
+  padding-inline: 2.625rem;
+}
+
+/* ---------------------------------------------------------------- cabecalho */
+
+.ul-cart-head {
+  margin-bottom: 1.75rem;
+}
+
+.ul-cart-title {
+  font-size: clamp(1.875rem, 2.4vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.ul-cart-sub {
+  color: var(--ul-cart-muted);
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0.375rem 0 0;
+}
+
+.ul-cart-count {
+  color: var(--ul-cart-muted);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  margin: 0.125rem 0 0;
+}
+
+/* ------------------------------------------------------------------ layout */
+
+.ul-cart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 4rem;
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------- itens */
+
+.ul-cart-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ul-cart-line);
+}
+
+.ul-cart-line {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 22rem) auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 1.75rem;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid var(--ul-cart-line);
+}
+
+/* 4:5, como foto de cardapio. E o elemento com mais peso da pagina.
+   O recorte fica no container para o zoom do hover nao vazar do canto. */
+.ul-cart-line-media,
+.ul-cart-line-media-empty {
+  width: 160px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ul-cart-panel);
+  /* Aro interno de 1px: separa a foto do branco sem virar borda dura. */
+  box-shadow: inset 0 0 0 1px rgba(16, 38, 26, 0.07);
+}
+
+.ul-cart-line-media-empty {
+  height: 200px;
+}
+
+.ul-cart-line-media img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.ul-cart-line-media a:hover img {
+  transform: scale(1.04);
+}
+
+.ul-cart-line-info {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.25rem;
+}
+
+.ul-cart-line-title {
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+}
+
+.ul-cart-line-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ul-cart-line-meta {
+  color: var(--ul-cart-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin: 0.5rem 0 0;
+}
+
+.ul-cart-line-meta + .ul-cart-line-meta {
+  margin-top: 0.125rem;
+}
+
+.ul-cart-line-meta-key {
+  color: var(--ul-cart-muted);
+}
+
+/* A horta e a assinatura do item: vem em verde, com o nome em destaque.
+   E a primeira linha de atributo porque o botao manda `Horta` primeiro. */
+/* `:not(:last-of-type)` evita pintar o Tamanho de verde quando o atributo
+   Horta ainda nao vem do botao da pagina do produtor. */
+.ul-cart-line-meta:first-of-type:not(:last-of-type) {
+  color: var(--ul-cart-accent);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.ul-cart-line-meta:first-of-type:not(:last-of-type) .ul-cart-line-meta-key {
+  color: var(--ul-cart-accent);
+  font-weight: 400;
+}
+
+.ul-cart-line-unit {
+  color: var(--ul-cart-muted);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  margin: 0.75rem 0 0;
+}
+
+.ul-cart-line-total {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.375rem;
+}
+
+/* -------------------------------------------------------- quantidade/lixo */
+
+.ul-cart-line-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+/* Cada botao vem dentro do <form> do CartForm; sem isso o form quebra a
+   linha do stepper. */
+.ul-cart-qty form {
+  display: contents;
+}
+
+.ul-cart-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid var(--ul-cart-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  background: var(--ul-cart-bg);
+}
+
+.ul-cart-qty-btn,
+.ul-cart-remove {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.ul-cart-qty-btn svg,
+.ul-cart-remove svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ul-cart-remove {
+  color: var(--ul-cart-muted);
+}
+
+.ul-cart-remove svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.ul-cart-qty-btn:hover:not(:disabled) {
+  background: var(--ul-cart-panel);
+  color: var(--ul-cart-accent);
+}
+
+.ul-cart-remove:hover:not(:disabled) {
+  background: var(--ul-cart-panel);
+  color: var(--ul-cart-text);
+}
+
+.ul-cart-qty-btn:disabled,
+.ul-cart-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ul-cart-qty-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ resumo */
+
+/* O esqueleto tem uma regra em `aside` (drawer lateral: fundo branco,
+   position fixed, 100vh, fora da tela). Por isso a coluna e uma <div> com
+   role. As linhas abaixo sao rede de seguranca caso alguem troque a tag. */
+.ul-cart-summary {
+  position: sticky;
+  top: 2rem;
+  inset-inline: auto;
+  width: auto;
+  height: auto;
+  box-shadow: none;
+  transform: none;
+
+  background: var(--ul-cart-panel);
+  border-radius: 4px;
+  padding: 1.75rem;
+}
+
+.ul-cart-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--ul-cart-line);
+}
+
+.ul-cart-summary > .ul-cart-row:first-of-type {
+  padding-top: 0;
+}
+
+.ul-cart-row-label {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.ul-cart-row-value {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* O total e o numero que a pessoa procura: corpo maior, sem linha embaixo. */
+.ul-cart-row--total {
+  border-bottom: 0;
+  align-items: baseline;
+  padding-bottom: 0;
+}
+
+.ul-cart-row--total .ul-cart-row-label {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.ul-cart-row--total .ul-cart-row-value {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------- desconto */
+
+.ul-cart-discount-toggle {
+  width: 100%;
+  border-top: 0;
+  border-inline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ul-cart-discount-toggle:hover .ul-cart-row-label {
+  color: var(--ul-cart-accent);
+}
+
+.ul-cart-discount-sign {
+  color: var(--ul-cart-muted);
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.ul-cart-discount-panel {
+  padding-block: 0.875rem;
+  border-bottom: 1px solid var(--ul-cart-line);
+}
+
+.ul-cart-discount-field {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ul-cart-discount-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--ul-cart-line);
+  border-radius: 999px;
+  background: var(--ul-cart-bg);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.ul-cart-discount-input::placeholder {
+  color: var(--ul-cart-muted);
+}
+
+.ul-cart-discount-apply,
+.ul-cart-discount-remove {
+  border: 1px solid var(--ul-cart-accent);
+  border-radius: 999px;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  color: var(--ul-cart-accent);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ul-cart-discount-apply:hover,
+.ul-cart-discount-remove:hover {
+  background: var(--ul-cart-accent);
+  color: #ffffff;
+}
+
+.ul-cart-discount-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ul-cart-accent);
+}
+
+.ul-cart-discount-remove {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+}
+
+/* --------------------------------------------------------------- checkout */
+
+.ul-cart-note {
+  color: var(--ul-cart-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin: 1rem 0 1.25rem;
+}
+
+/* Verde da marca, nao preto: o preto era do esqueleto e nao diz nada sobre
+   a Urban Life. */
+.ul-cart-checkout {
+  display: block;
+  width: 100%;
+  padding: 0.9375rem 1.5rem;
+  border-radius: 999px;
+  background: var(--ul-cart-accent);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+/* O tema tem um `a:hover` global que sublinha tudo; sem repetir a
+   declaracao aqui, o botao ganha sublinhado no hover. */
+.ul-cart-checkout:hover {
+  background: #0a4a23;
+  text-decoration: none;
+}
+
+.ul-cart-continue {
+  display: block;
+  margin-top: 0.875rem;
+  color: var(--ul-cart-muted);
+  font-size: 0.9375rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.ul-cart-continue:hover {
+  color: var(--ul-cart-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ vazio */
+
+.ul-cart-empty {
+  padding-block: 1.5rem 4rem;
+  max-width: 38ch;
+}
+
+.ul-cart-empty-text {
+  color: var(--ul-cart-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.ul-cart-empty-link {
+  display: inline-block;
+  padding: 0.875rem 1.75rem;
+  border-radius: 999px;
+  background: var(--ul-cart-accent);
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ul-cart-empty-link:hover {
+  background: #0a4a23;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------- suporte */
+
+.ul-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ul-cart :focus-visible {
+  outline: 2px solid var(--ul-cart-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ul-cart * {
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------ responsivo */
+
+@media (max-width: 1200px) {
+  .ul-cart-grid {
+    gap: 2.5rem;
+  }
+
+  .ul-cart-line {
+    grid-template-columns: 160px minmax(0, 1fr) auto auto;
+    column-gap: 1.25rem;
+  }
+}
+
+@media (max-width: 990px) {
+  .ul-cart-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .ul-cart-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 749px) {
+  .ul-cart-inner {
+    padding-inline: 1.25rem;
+  }
+
+  .ul-cart-line {
+    grid-template-columns: 104px minmax(0, 1fr);
+    column-gap: 1rem;
+    row-gap: 1rem;
+    padding-block: 1.25rem;
+  }
+
+  .ul-cart-line-media,
+  .ul-cart-line-media-empty {
+    width: 104px;
+    border-radius: 10px;
+  }
+
+  .ul-cart-line-media img,
+  .ul-cart-line-media-empty {
+    height: 130px;
+  }
+
+  .ul-cart-line-actions {
+    grid-column: 2;
+    padding-top: 0;
+  }
+
+  .ul-cart-line-total {
+    grid-column: 2;
+    text-align: left;
+    padding-top: 0;
+  }
+}

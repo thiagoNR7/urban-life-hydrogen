@@ -349,6 +349,7 @@ export default function ProducerDetail() {
               selected={selected}
               catalog={catalog}
               onSelect={setSelectedId}
+              producerName={producer.name}
             />
           )}
         </div>

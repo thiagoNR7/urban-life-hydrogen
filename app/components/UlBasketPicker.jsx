@@ -15,7 +15,13 @@ import {canSubstitute, producerDetailUi} from '~/data/producers';
  * Cada troca vira um atributo da linha do carrinho, então chega ao pedido
  * do admin e à separação em vez de morrer no front.
  */
-export function UlBasketPicker({baskets, selected, catalog = [], onSelect}) {
+export function UlBasketPicker({
+  baskets,
+  selected,
+  catalog = [],
+  onSelect,
+  producerName,
+}) {
   // Uma troca é {out, in}. A lista começa com uma em branco.
   const [swaps, setSwaps] = useState([{out: '', in: ''}]);
 
@@ -276,14 +282,18 @@ export function UlBasketPicker({baskets, selected, catalog = [], onSelect}) {
                   quantity: 1,
                   // Uma linha por troca, numerada — é o formato que a
                   // separação e o WhatsApp precisam ler.
-                  attributes: activeSwaps.map((swap, i) => ({
-                    key: `Troca ${i + 1}`,
-                    value: `${swap.out} → ${swap.in}`,
-                  })),
+                  attributes: [
+                    {key: 'Horta', value: producerName},
+                    ...activeSwaps.map((swap, i) => ({
+                      key: `Troca ${i + 1}`,
+                      value: `${swap.out} → ${swap.in}`,
+                    })),
+                  ],
                 },
               ],
             }}
           >
+            <input type="hidden" name="redirectTo" value="/cart" />
             <button
               type="submit"
               className="ul-btn ul-btn--solid ul-btn--lg ul-baskets__cta"
