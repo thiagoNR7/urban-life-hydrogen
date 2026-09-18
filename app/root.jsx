@@ -28,6 +28,7 @@ import ulProdutores from '~/styles/ul-produtores.css?url';
 import ulProdutorDetalhe from '~/styles/ul-produtor-detalhe.css?url';
 import ulConta from '~/styles/ul-conta.css?url';
 import ulCart from '~/styles/ul-cart.css?url';
+import ulDestaque from '~/styles/ul-destaque.css?url';
 import ulMobile from '~/styles/ul-mobile.css?url';
 
 import {PageLayout} from './components/PageLayout';
@@ -180,6 +181,7 @@ export function Layout({children}) {
         <link rel="stylesheet" href={ulProdutorDetalhe}></link>
         <link rel="stylesheet" href={ulConta}></link>
         <link rel="stylesheet" href={ulCart}></link>
+        <link rel="stylesheet" href={ulDestaque}></link>
         <link rel="stylesheet" href={ulMobile}></link>
         <Meta />
         <Links />

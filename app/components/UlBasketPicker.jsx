@@ -2,6 +2,8 @@ import {useMemo, useState} from 'react';
 import {Money, CartForm} from '@shopify/hydrogen';
 import {UlIcon} from './UlIcon';
 import {canSubstitute, producerDetailUi} from '~/data/producers';
+import {deliveryRegions} from '~/data/content';
+import {UlDeliveryNote} from '~/components/UlDeliveryNote';
 
 /**
  * Seletor de cesta P / M / G, com troca de itens.
@@ -312,6 +314,8 @@ export function UlBasketPicker({
           </button>
         )}
       </div>
+
+      <UlDeliveryNote clusters={deliveryRegions.clusters} />
     </div>
   );
 }

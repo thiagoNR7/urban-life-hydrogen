@@ -18,7 +18,7 @@ export const header = {
     {label: 'Como funciona', href: '/#como-funciona'},
   ],
   showAccount: true,
-  producerCta: {label: 'Sou Produtor', href: '/account/register', icon: 'sprout'},
+  producerCta: {label: 'Sou Produtor', href: 'https://wa.me/5511952353041?text=Ol%C3%A1%21%20Quero%20cadastrar%20minha%20horta%20como%20produtor%20parceiro%20da%20Urban%20Life.', icon: 'sprout'},
 };
 
 export const hero = {
@@ -97,7 +97,7 @@ export const deliveryRegions = {
     {
       zone: 'Zona Norte',
       horta: 'Horta Zona Norte',
-      day: 'Quarta-feira',
+      day: 'Terça-feira',
       radius: '10 km',
       active: true,
       neighborhoods:
@@ -106,7 +106,7 @@ export const deliveryRegions = {
     {
       zone: 'Zona Leste',
       horta: 'Horta Zona Leste',
-      day: 'Segunda-feira',
+      day: 'Quinta-feira',
       radius: '11 km',
       active: true,
       neighborhoods:

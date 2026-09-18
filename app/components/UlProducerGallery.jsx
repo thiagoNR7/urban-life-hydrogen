@@ -1,16 +1,49 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {UlIcon} from './UlIcon';
 
 /**
- * Galeria da horta: setas laterais e pontinhos.
+ * Galeria da horta: setas laterais, pontinhos e troca automática.
  *
- * Sem autoplay de propósito — diferente do hero. Aqui o visitante está lendo
- * sobre um produtor específico, e a imagem trocar sozinha atrapalha.
+ * O autoplay foi pedido em 18/09. Antes disso o componente era manual de
+ * propósito — a ideia era que imagem trocando sozinha atrapalha quem está
+ * lendo sobre o produtor. Se voltar a incomodar, é só pôr INTERVALO em 0
+ * para desligar.
+ *
+ * 1,5s é bem mais rápido que os 5s do carrossel do hero. Trocar o número
+ * abaixo é a única coisa necessária para ajustar.
  */
+const INTERVALO = 1500;
+
 export function UlProducerGallery({images, alt}) {
   const [active, setActive] = useState(0);
+  const [pausado, setPausado] = useState(false);
   const total = images.length;
+
+  /**
+   * Pausa no hover e quando a aba sai de foco — girar em segundo plano só
+   * gasta bateria. `prefers-reduced-motion` desliga de vez: troca automática
+   * é movimento, e há quem precise evitar.
+   */
+  const reduzido = useRef(false);
+
+  useEffect(() => {
+    reduzido.current =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  useEffect(() => {
+    if (total <= 1 || pausado || !INTERVALO || reduzido.current) {
+      return undefined;
+    }
+
+    const id = setInterval(() => {
+      setActive((i) => (i + 1) % total);
+    }, INTERVALO);
+
+    return () => clearInterval(id);
+  }, [total, pausado]);
 
   if (total === 0) {
     return <div className="ul-gallery ul-gallery--empty" />;
@@ -19,7 +52,13 @@ export function UlProducerGallery({images, alt}) {
   const go = (delta) => setActive((i) => (i + delta + total) % total);
 
   return (
-    <div className="ul-gallery">
+    <div
+      className="ul-gallery"
+      onMouseEnter={() => setPausado(true)}
+      onMouseLeave={() => setPausado(false)}
+      onFocusCapture={() => setPausado(true)}
+      onBlurCapture={() => setPausado(false)}
+    >
       {images.map((image, i) => (
         <div
           key={image.url}

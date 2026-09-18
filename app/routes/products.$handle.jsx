@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import {useLoaderData} from 'react-router';
-import {Image, Money, CartForm} from '@shopify/hydrogen';
+import {Image, Money} from '@shopify/hydrogen';
 import {UlIcon} from '~/components/UlIcon';
-import {useAside} from '~/components/Aside';
+import {UlAddToCart} from '~/components/UlAddToCart';
 
 /**
  * Página de produto.
@@ -54,7 +54,6 @@ export const meta = ({data}) => [
 
 export default function Product() {
   const {product} = useLoaderData();
-  const {open} = useAside();
   const variants = product.variants.nodes;
 
   const [selectedId, setSelectedId] = useState(
@@ -158,27 +157,19 @@ export default function Product() {
             </p>
           )}
 
-          <CartForm
-            route="/cart"
-            action={CartForm.ACTIONS.LinesAdd}
-            inputs={{lines: [{merchandiseId: selectedId, quantity: 1}]}}
+          <UlAddToCart
+            lines={[{merchandiseId: selectedId, quantity: 1}]}
+            disponivel={!!selected?.availableForSale}
+            nome={product.title}
+            className="ul-btn ul-btn--solid ul-btn--lg ul-product__add"
           >
-            <button
-              type="submit"
-              className="ul-btn ul-btn--solid ul-btn--lg ul-product__add"
-              disabled={!selected?.availableForSale}
-              onClick={() => {
-                if (selected?.availableForSale) open('cart');
-              }}
-            >
-              {selected?.availableForSale
-                ? 'Adicionar à cesta'
-                : 'Esgotado nesta semana'}
-              {selected?.availableForSale && (
-                <UlIcon name="arrow-right" size={16} />
-              )}
-            </button>
-          </CartForm>
+            {selected?.availableForSale
+              ? 'Adicionar à cesta'
+              : 'Esgotado nesta semana'}
+            {selected?.availableForSale && (
+              <UlIcon name="arrow-right" size={16} />
+            )}
+          </UlAddToCart>
 
           <div className="ul-product__delivery">
             <UlIcon name="truck" size={16} />

@@ -135,9 +135,9 @@ function toProducer(node) {
 
   // A galeria mostra as fotos que existirem, sem repetir a mesma imagem.
   const gallery = [
-    pickImage(PRODUCER_FIELDS.coverImage),
     pickImage(['foto_cultivo']),
-    pickImage(PRODUCER_FIELDS.image),
+    pickImage(['foto_card']),
+    pickImage(['foto_perfil']),
   ].filter(Boolean);
 
   const seen = new Set();
@@ -303,7 +303,9 @@ function normalize(value) {
 export default function ProducerDetail() {
   const {producer, baskets: basketList, products, shareUrl, catalog} =
     useLoaderData();
-  const [selectedId, setSelectedId] = useState(basketList[0]?.id);
+  const [selectedId, setSelectedId] = useState(
+    basketList[1]?.id ?? basketList[0]?.id,
+  );
 
   const selected =
     basketList.find((b) => b.id === selectedId) ?? basketList[0] ?? null;
